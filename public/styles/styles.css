@@ -1,0 +1,728 @@
+/* Main Theme Colors */
+:root {
+    --primary-color: #1e5875;
+    /* Olive green */
+    --secondary-color: #5ed0bd;
+    /* Brownish accent */
+    --background-color: #f8f9fa;
+    --card-background: #ffffff;
+    --text-color: #ffffff;
+    --header-text-color: #ffffff;
+    --border-color: #e0e0e0;
+    --hover-shadow: rgba(0, 0, 0, 0.1);
+    --reserved-color: #f94449;
+    --highlight-border: #000000;
+    --text-color-dark: #000000;
+}
+
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background-color: var(--background-color);
+    color: #333;
+    justify-content: center;
+    align-items: center;
+}
+
+header {
+    background-color: var(--primary-color);
+    color: var(--text-color);
+    padding: 20px;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    /* Center the header text */
+    position: relative;
+    /* Allows independent positioning of child elements */
+}
+
+.header-container {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    /* Centers the text */
+    position: relative;
+}
+
+.back-button {
+    position: absolute;
+    left: 20px;
+    /* Keeps the button on the left */
+    text-decoration: none;
+    color: var(--text-color);
+    font-size: 24px;
+    /* Adjust icon size */
+}
+
+.home-button {
+    position: absolute;
+    right: 20px;
+    /* Keeps the button on the left */
+    text-decoration: none;
+    color: var(--text-color);
+    font-size: 24px;
+    /* Adjust icon size */
+}
+
+.home-button:hover {
+    color: var(--secondary-color);
+    /* Add hover effect if desired */
+}
+
+h1 {
+    margin: 0;
+    font-size: 1.5rem;
+    /* Adjust the font size */
+    text-align: center;
+}
+
+/* Container Styling */
+.container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+    background: #fff;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Headings Styling */
+h1 {
+    text-align: center;
+    color: var(--text-color);
+}
+
+h2 {
+    text-align: center;
+    color: var(--primary-color);
+}
+
+/* Form Styling */
+.form {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.label {
+    font-weight: bold;
+}
+
+.input {
+    padding: 10px;
+    font-size: 14px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+}
+
+/* Product List Styling */
+#productList {
+    margin-top: 20px;
+}
+
+.product-item {
+    background-color: #f0f8ff;
+    border: 1px solid var(--primary-color);
+    border-radius: 5px;
+    padding: 10px;
+    margin-bottom: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.product-item p {
+    margin: 0;
+}
+
+main {
+    flex: 1;
+    /* Ensures the main content stretches to take available space */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Table Container */
+.table-container {
+    display: flex;
+    justify-content: center;
+    /* Center horizontally */
+    align-items: center;
+    /* Center vertically if needed */
+    margin: 20px auto;
+    /* Add vertical margin */
+}
+
+/* Styled Table */
+.styled-table {
+    width: 80%;
+    /* Adjust the table width */
+    max-width: 800px;
+    /* Limit maximum width */
+    border-collapse: collapse;
+    margin: 0 auto;
+    /* Center the table within its container */
+    font-size: 1rem;
+    text-align: left;
+    border: 1px solid var(--border-color);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    background-color: #fff;
+}
+
+.styled-table th,
+.styled-table td {
+    padding: 12px 15px;
+    border: 1px solid var(--border-color);
+}
+
+.styled-table thead tr {
+    background-color: var(--primary-color);
+    color: var(--text-color);
+    text-align: left;
+}
+
+.styled-table tbody tr {
+    border-bottom: 1px solid var(--border-color);
+}
+
+.styled-table tbody tr:nth-of-type(even) {
+    background-color: var(--background-color);
+}
+
+.styled-table tbody tr:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+}
+
+.styled-table td {
+    color: var(--text-color-dark);
+}
+
+
+.form-group {
+    display: flex;
+    align-items: center;
+    margin-bottom: 1rem;
+    margin-left: 2px;
+}
+
+.form-group label {
+    color: #000;
+    /* Black labels */
+    font-weight: bold;
+    margin-right: 1rem;
+    min-width: 160px;
+    /* Set a consistent width for labels */
+}
+
+input[type="text"] {
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    width: 50%;
+    font-size: 1rem;
+    margin-top: 1rem;
+    display: inline-block;
+}
+
+.form-group textarea {
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    width: 50%;
+    font-size: 1rem;
+    margin-top: 1rem;
+    display: inline-block;
+}
+
+input[type="number"] {
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    width: 50%;
+    font-size: 1rem;
+    margin-top: 1rem;
+    display: inline-block;
+}
+
+input[type="tel"] {
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    width: 50%;
+    font-size: 1rem;
+    margin-top: 1rem;
+    display: inline-block;
+}
+
+.btn-primary {
+    padding: 10px 15px;
+    background-color: var(--primary-color);
+    color: var(--text-color);
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-top: 1rem;
+}
+
+.btn-primary:hover {
+    background-color: var(--secondary-color);
+}
+
+/* Time Slots */
+#timeSlots {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: center;
+    margin: 1rem 0;
+}
+
+#timeSlots button {
+    padding: 10px 15px;
+    border: 2px solid transparent;
+    /* Default border */
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1rem;
+    background-color: var(--secondary-color);
+    color: var(--text-color);
+    transition: border 0.3s, background-color 0.3s;
+}
+
+#timeSlots button:hover {
+    background-color: var(--primary-color);
+}
+
+#timeSlots button:focus {
+    outline: none;
+    /* Remove default focus outline */
+    border-color: var(--primary-color);
+    /* Highlight selected border */
+}
+
+#timeSlots button.btn-secondary {
+    background-color: var(--secondary-color);
+    color: var(--text-color);
+}
+
+#timeSlots button.btn-secondary:hover {
+    background-color: var(--primary-color);
+}
+
+#timeSlots button.btn-reserved {
+    background-color: var(--reserved-color);
+    color: var(--text-color);
+    cursor: not-allowed;
+}
+
+#timeSlots button.btn-selected {
+    border-width: 4px;
+    border-color: var(--primary-color);
+}
+
+/* Action Container */
+.action-container {
+    text-align: center;
+    margin-top: 2rem;
+}
+
+select {
+    padding: 10px;
+    font-size: 1rem;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    margin-bottom: 1rem;
+}
+
+#reserveButton {
+    padding: 10px 15px;
+    background-color: var(--primary-color);
+    color: var(--text-color);
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+#reserveButton:hover {
+    background-color: var(--secondary-color);
+}
+
+/* Body Styling for Background Image */
+.login-body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: url('/images/background.jpg') no-repeat center center fixed;
+    background-size: cover;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    overflow: hidden;
+    /* Prevent scrolling */
+}
+
+/* Login Page Specific Styles */
+.login-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    max-width: 360px;
+    background-color: rgba(255, 255, 255, 0.9);
+    /* Slightly transparent white background */
+    padding: 30px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    box-sizing: border-box;
+}
+
+.login-logo {
+    width: 120px;
+    height: auto;
+    margin-bottom: 20px;
+}
+
+.login-form {
+    width: 100%;
+}
+
+.login-form h1 {
+    text-align: center;
+    margin-bottom: 20px;
+    font-size: 24px;
+    color: var(--primary-color);
+}
+
+.login-form input {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 15px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    box-sizing: border-box;
+    font-size: 14px;
+}
+
+.login-form button {
+    width: 100%;
+    padding: 10px;
+    background-color: var(--primary-color);
+    color: #fff;
+    font-size: 16px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.login-form button:hover {
+    background-color: var(--secondary-color);
+}
+
+.error-message {
+    color: red;
+    font-size: 14px;
+    margin-bottom: 10px;
+    display: none;
+}
+
+.dashboard-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+}
+
+.dashboard-card {
+    text-decoration: none;
+    background-color: var(--card-background);
+    color: var(--text-color);
+    padding: 2rem;
+    width: 130px;
+    height: 100px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    text-align: center;
+    box-shadow: 0 2px 4px var(--hover-shadow);
+    transition: transform 0.2s, box-shadow 0.2s;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 1.2rem;
+}
+
+.dashboard-card h2 {
+    margin: 0;
+    font-size: 1.2rem;
+    color: var(--primary-color);
+}
+
+.dashboard-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 4px 8px var(--hover-shadow);
+}
+
+#bundleList {
+    margin-top: 2rem;
+}
+
+.bundle-item {
+    background-color: #f8f9fa;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.bundle-item p {
+    margin: 0.5rem 0;
+}
+
+#productList {
+    margin-top: 20px;
+}
+
+.product-item {
+    background-color: #f0f8ff;
+    border: 1px solid var(--primary-color);
+    border-radius: 5px;
+    padding: 10px;
+    margin-bottom: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.product-item p {
+    margin: 0;
+}
+
+/* Payment Status Buttons */
+.payment-status button {
+    width: 100%;
+    height: 40px;
+    border: none;
+    cursor: pointer;
+    border-radius: 4px;
+}
+
+.active-payment {
+    background-color: var(--active-color);
+    /* Green */
+    cursor: pointer;
+}
+
+.inactive-payment {
+    background-color: var(--inactive-color);
+    /* Red */
+    cursor: default;
+}
+
+.active-payment:hover {
+    opacity: 0.8;
+    /* Add hover effect for active payments */
+}
+
+.payment-icon {
+    color: #28a745;
+    /* Green for payment */
+}
+
+.edit-icon {
+    color: #0056b3;
+    /* Blue for edit */
+}
+
+.delete-icon {
+    color: #dc3545;
+    /* Red for delete */
+}
+
+.action-icons i:hover {
+    opacity: 0.8;
+    /* Add a hover effect */
+}
+
+/* Container adjustments */
+.manage-clients-container {
+    margin: 0 auto;
+    padding: 20px;
+    max-width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+}
+
+/* Add Client Button */
+.btn-add-client {
+    background-color: var(--primary-color, #4CAF50);
+    color: white;
+    border: none;
+    padding: 15px;
+    font-size: 1rem;
+    border-radius: 5px;
+    cursor: pointer;
+    width: 50%;
+    margin-bottom: 20px;
+}
+
+.btn-add-client:hover {
+    opacity: 0.9;
+}
+
+.styled-clients-table {
+    width: 80%;
+    border-collapse: collapse;
+    font-family: Arial, sans-serif;
+    align-items: center;
+}
+
+.styled-clients-table th,
+.styled-clients-table td {
+    padding: 10px 20px;
+    text-align: left;
+    border: 1px solid var(--border-color, #ddd);
+}
+
+.styled-clients-table th {
+    background-color: var(--primary-color, #f4f4f4);
+    color: var(--text-color, #333);
+}
+
+/* 
+.styled-clients-table td {
+    background-color: #fff;
+} */
+
+.col-name {
+    width: 18%;
+}
+
+.col-birth {
+    width: 18%;
+}
+
+.col-number {
+    width: 18%;
+}
+
+.col-notes {
+    width: 30%;
+}
+
+.col-actions {
+    width: 10%;
+}
+
+.styled-clients-payments-table {
+    width: 40%;
+    border-collapse: collapse;
+    font-family: Arial, sans-serif;
+    align-items: center;
+}
+
+.styled-clients-payments-table th,
+.styled-clients-payments-table td {
+    padding: 10px 20px;
+    text-align: left;
+    border: 1px solid var(--border-color, #ddd);
+}
+
+.styled-clients-payments-table th {
+    background-color: var(--primary-color, #f4f4f4);
+    color: var(--text-color, #333);
+}
+
+.col-payment {
+    width: 5%;
+}
+
+.col-status {
+    width: 5%;
+}
+
+/* Payment status cell for active payment */
+.cell-payment-on {
+    background-color: #4CAF50;
+    color: black;
+    text-align: center;
+    cursor: pointer;
+}
+
+/* Payment status cell for no payment */
+.cell-payment-off {
+    background-color: #f44336;
+    /* Red for no payment */
+    color: transparent;
+    /* No text for inactive payment */
+}
+
+.clickable-payment:hover {
+    opacity: 0.9;
+}
+
+/* Button Styling */
+.action-icons button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 5px;
+}
+
+.action-icons button i {
+    font-size: 1rem;
+    color: var(--primary-color, #333);
+}
+
+.action-icons button:hover i {
+    color: var(--primary-color, #4CAF50);
+}
+
+footer {
+    text-align: center;
+    padding: 1rem;
+    background-color: var(--primary-color);
+    color: var(--header-text-color);
+    font-size: 0.9rem;
+}
+
+.form-control {
+    width: 100%;
+    padding: 10px;
+    margin: 10px 0;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+.search-results {
+    margin-top: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.client-result {
+    padding: 10px;
+    cursor: pointer;
+    border-bottom: 1px solid #eee;
+}
+
+.client-result:hover {
+    background-color: #f0f0f0;
+}
+
+.selected-client {
+    margin-top: 20px;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}

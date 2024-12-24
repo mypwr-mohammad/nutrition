@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
+      rel="stylesheet"
+    />
+    <title>Payment Details</title>
+    <link rel="stylesheet" href="/styles/styles.css" />
+  </head>
+  <body>
+    <header>
+      <div class="header-container">
+        <a href="/clients-payments" class="back-button">
+          <i class="fa-solid fa-arrow-left"></i>
+        </a>
+        <h1>Payment Details</h1>
+        <a href="/dashboard" class="home-button">
+          <i class="fa-solid fa-house"></i>
+        </a>
+      </div>
+    </header>
+    <div class="container">
+      <h2>Client: <span id="clientName"></span></h2>
+      <div class="bundle-item card">
+        <p>Start Date: <strong id="startDate"></strong></p>
+        <p>Expire Date: <strong id="expireDate"></strong></p>
+        <p>Price: <strong id="price"></strong></p>
+        <p>Bundle: <strong id="bundle"></strong></p>
+        <p>Status: <strong id="status"></strong></p>
+      </div>
+      <button id="freezeButton" class="btn-primary"></button>
+    </div>
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        const clientId = location.pathname.split("/").pop();
+        const freezeButton = document.getElementById("freezeButton");
+
+        // Fetch payment details
+        fetch(`/payments/${clientId}`)
+          .then((response) => {
+            if (!response.ok)
+              throw new Error("Failed to fetch payment details.");
+            return response.json();
+          })
+          .then((payment) => {
+            document.getElementById("clientName").textContent =
+              payment.full_name;
+            document.getElementById("startDate").textContent =
+              payment.start_date;
+            document.getElementById("expireDate").textContent =
+              payment.expire_date;
+            document.getElementById(
+              "price"
+            ).textContent = `${payment.price.toFixed(2)} NIS`;
+            document.getElementById("bundle").textContent =
+              payment.bundle_name || "N/A";
+            document.getElementById("status").textContent =
+              new Date(payment.expire_date) >= new Date()
+                ? "Active"
+                : "Expired";
+
+            // Set the button text based on the freeze status
+            updateFreezeButton(payment.is_frozen);
+          })
+          .catch((error) => {
+            alert(error.message);
+          });
+
+        // Update freeze button text and action
+        function updateFreezeButton(isFrozen) {
+          freezeButton.textContent = isFrozen ? "Unfreeze" : "Freeze";
+          freezeButton.onclick = () => toggleFreezeStatus(isFrozen, clientId);
+        }
+
+        // Toggle freeze/unfreeze
+        function toggleFreezeStatus(isFrozen, clientId) {
+          const action = isFrozen ? "unfreeze-payment" : "freeze-payment";
+
+          fetch(`/payments/${action}/${clientId}`, {
+            method: "POST",
+          })
+            .then((response) => {
+              if (!response.ok)
+                throw new Error(`Failed to ${action.replace("-", " ")}.`);
+              return response.json();
+            })
+            .then((result) => {
+              alert(`${isFrozen ? "Unfrozen" : "Frozen"} successfully.`);
+              if (!isFrozen && result.days_frozen) {
+                const expireDateElem = document.getElementById("expireDate");
+                const expireDate = new Date(expireDateElem.textContent);
+                expireDate.setDate(expireDate.getDate() + result.days_frozen);
+                expireDateElem.textContent = expireDate
+                  .toISOString()
+                  .split("T")[0];
+              }
+              // Update button text to reflect the new state
+              updateFreezeButton(!isFrozen);
+            })
+            .catch((error) => {
+              alert(`Error: ${error.message}`);
+            });
+        }
+      });
+    </script>
+  </body>
+</html>

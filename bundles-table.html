@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
+      rel="stylesheet"
+    />
+    <title>Manage Bundles</title>
+    <link rel="stylesheet" href="styles/styles.css" />
+  </head>
+  <body>
+    <header>
+      <div class="header-container">
+        <a href="/bundles-dashboard" class="back-button">
+          <i class="fa-solid fa-arrow-left"></i>
+        </a>
+        <h1>Manage Bundles</h1>
+        <a href="/dashboard" class="home-button">
+          <i class="fa-solid fa-house"></i>
+        </a>
+      </div>
+    </header>
+    <div class="container">
+      <h2>Bundle Table</h2>
+      <div id="bundleList">
+        <p>List of bundles will be displayed here.</p>
+      </div>
+    </div>
+    <script>
+      // Function to fetch and display bundles
+      function fetchBundles() {
+        fetch("/bundles")
+          .then((response) => response.json())
+          .then((bundles) => {
+            const bundleList = document.getElementById("bundleList");
+            bundleList.innerHTML = ""; // Clear the existing content
+            bundles.forEach((bundle) => {
+              const bundleItem = document.createElement("div");
+              bundleItem.className = "bundle-item card";
+              bundleItem.innerHTML = `
+                <p><strong>${bundle.name}</strong></p>
+                <p>Duration: ${bundle.duration} months</p>
+                <p>price: ${bundle.price} months</p>
+                <p>Description: ${bundle.description}</p>
+              `;
+              bundleList.appendChild(bundleItem);
+            });
+          })
+          .catch((error) => console.error("Error fetching bundles:", error));
+      }
+
+      // Fetch bundles on page load
+      window.onload = fetchBundles;
+    </script>
+  </body>
+</html>

@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
+      rel="stylesheet"
+    />
+    <title>Edit Client</title>
+    <link rel="stylesheet" href="/styles/styles.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css"
+    />
+  </head>
+  <body>
+    <header>
+      <div class="header-container">
+        <a href="/clients-table" class="back-button">
+          <i class="fa-solid fa-arrow-left"></i>
+        </a>
+        <h1>Edit Client</h1>
+        <a href="/dashboard" class="home-button">
+          <i class="fa-solid fa-house"></i>
+        </a>
+      </div>
+    </header>
+    <div class="container">
+      <form id="editClientForm" class="form">
+        <div class="form-group">
+          <label for="full_name">Full Name:</label>
+          <input type="text" name="full_name" id="full_name" required />
+        </div>
+        <div class="form-group">
+          <label for="date_of_birth">Date of Birth:</label>
+          <input type="date" name="date_of_birth" id="date_of_birth" required />
+        </div>
+        <div class="form-group">
+          <label for="phone_number">Phone Number:</label>
+          <input type="tel" name="phone_number" id="phone_number" required />
+        </div>
+        <div class="form-group">
+          <label for="notes">Notes:</label>
+          <textarea name="notes" id="notes" required></textarea>
+        </div>
+        <button type="submit" class="btn-primary">Save Changes</button>
+      </form>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script>
+      // Initialize Flatpickr
+      flatpickr("#date_of_birth", {
+        dateFormat: "Y-m-d",
+      });
+      const clientId = location.pathname.split("/").pop();
+      const errorMessage = document.getElementById("errorMessage");
+
+      // Fetch client data
+      fetch(`/clients/${clientId}`)
+        .then((response) => {
+          if (!response.ok) throw new Error("Failed to fetch client details.");
+          return response.json();
+        })
+        .then((client) => {
+          document.getElementById("full_name").value = client.full_name;
+          document.getElementById("date_of_birth").value = client.date_of_birth;
+          document.getElementById("phone_number").value = client.phone_number;
+          document.getElementById("notes").value = client.notes || "";
+        })
+        .catch((error) => {
+          errorMessage.textContent = error.message;
+        });
+
+      // Save changes
+      document
+        .getElementById("editClientForm")
+        .addEventListener("submit", (event) => {
+          event.preventDefault();
+
+          const updatedClient = {
+            full_name: document.getElementById("full_name").value,
+            date_of_birth: document.getElementById("date_of_birth").value,
+            phone_number: document.getElementById("phone_number").value,
+            notes: document.getElementById("notes").value,
+          };
+
+          fetch(`/clients/${clientId}`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(updatedClient),
+          })
+            .then((response) => {
+              if (!response.ok) {
+                return response.text().then((text) => {
+                  throw new Error(text);
+                });
+              }
+              alert("Client updated successfully.");
+              location.href = "/clients-table";
+            })
+            .catch((error) => {
+              errorMessage.textContent = error.message;
+            });
+        });
+    </script>
+  </body>
+</html>

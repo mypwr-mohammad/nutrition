@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
+      rel="stylesheet"
+    />
+    <title>Make a Reservation</title>
+    <link rel="stylesheet" href="styles/styles.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css"
+    />
+  </head>
+  <body>
+    <header>
+      <div class="header-container">
+        <a href="/reservations-dashboard" class="back-button">
+          <i class="fa-solid fa-arrow-left"></i>
+        </a>
+        <h1>Make a Reservation</h1>
+        <a href="/dashboard" class="home-button">
+          <i class="fa-solid fa-house"></i>
+        </a>
+      </div>
+    </header>
+    <div class="container">
+      <form id="reservationForm" class="form">
+        <div class="form-group">
+          <label for="reservation_date">Reservation Date:</label>
+          <input
+            type="text"
+            id="reservation_date"
+            placeholder="Select a date"
+            required
+          />
+        </div>
+      </form>
+      <div id="timeSlots"></div>
+
+      <h2>Client List</h2>
+      <div class="action-container">
+        <select id="clientList">
+          <!-- Clients will be populated dynamically -->
+        </select>
+        <button id="reserveButton" onclick="reserveSelectedSlot()">
+          Reserve Selected Slot
+        </button>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script>
+      let selectedSlot = null;
+
+      // Initialize Flatpickr
+      flatpickr("#reservation_date", {
+        minDate: "today",
+        dateFormat: "Y-m-d",
+        onChange: () => fetchTimeSlots(),
+      });
+
+      // Generate 15-minute intervals from 8:00 AM to 6:00 PM
+      function generateTimeSlots() {
+        const slots = [];
+        for (let hour = 8; hour <= 17; hour++) {
+          for (let minutes = 0; minutes < 60; minutes += 15) {
+            const time = `${hour.toString().padStart(2, "0")}:${minutes
+              .toString()
+              .padStart(2, "0")}`;
+            slots.push(time);
+          }
+        }
+        return slots;
+      }
+
+      function fetchTimeSlots() {
+        const date = document.getElementById("reservation_date").value;
+        if (!date) {
+          alert("Please select a date.");
+          return;
+        }
+
+        fetch(`/reservations/get-available-slots?reservation_date=${date}`)
+          .then((response) => response.json())
+          .then((slots) => {
+            const timeSlotsDiv = document.getElementById("timeSlots");
+            timeSlotsDiv.innerHTML = "";
+
+            const allSlots = generateTimeSlots();
+
+            allSlots.forEach((slot) => {
+              const reservedSlot = slots.find(
+                (s) => s.reservation_time === slot
+              );
+              const button = document.createElement("button");
+              button.textContent = slot;
+              button.disabled = !!reservedSlot;
+              button.className = reservedSlot
+                ? "btn-reserved"
+                : "btn-secondary";
+
+              button.onclick = () => {
+                selectedSlot = slot;
+                highlightSelectedSlot(button);
+              };
+
+              timeSlotsDiv.appendChild(button);
+            });
+          })
+          .catch((error) => console.error("Error fetching time slots:", error));
+      }
+
+      // Highlight selected time slot
+      function highlightSelectedSlot(button) {
+        const buttons = document.querySelectorAll("#timeSlots button");
+        buttons.forEach((btn) => {
+          btn.classList.remove("btn-selected");
+        });
+        button.classList.add("btn-selected");
+      }
+
+      function reserveSelectedSlot() {
+        if (!selectedSlot) {
+          alert("Please select a time slot.");
+          return;
+        }
+
+        const date = document.getElementById("reservation_date").value;
+        const clientId = document.getElementById("clientList").value;
+
+        if (!clientId) {
+          alert("Please select a client.");
+          return;
+        }
+
+        fetch("/reservations", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            client_id: clientId,
+            reservation_date: date,
+            reservation_time: selectedSlot,
+          }),
+        })
+          .then((response) => response.json())
+          .then(() => fetchTimeSlots())
+          .catch((error) => console.error("Error making reservation:", error));
+      }
+
+      function fetchClients() {
+        fetch("/clients")
+          .then((response) => response.json())
+          .then((clients) => {
+            const clientList = document.getElementById("clientList");
+            clientList.innerHTML = "";
+
+            clients.forEach((client) => {
+              const option = document.createElement("option");
+              option.value = client.id;
+              option.textContent = client.full_name;
+              clientList.appendChild(option);
+            });
+          });
+      }
+
+      window.onload = () => {
+        fetchClients();
+      };
+    </script>
+  </body>
+</html>

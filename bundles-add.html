@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
+      rel="stylesheet"
+    />
+    <title>Manage Bundles</title>
+    <link rel="stylesheet" href="styles/styles.css" />
+  </head>
+  <body>
+    <header>
+      <div class="header-container">
+        <a href="/bundles-dashboard" class="back-button">
+          <i class="fa-solid fa-arrow-left"></i>
+        </a>
+        <h1>Manage Bundles</h1>
+        <a href="/dashboard" class="home-button">
+          <i class="fa-solid fa-house"></i>
+        </a>
+      </div>
+    </header>
+    <div class="container">
+      <h2>Add a New Bundle</h2>
+      <form id="bundleForm" class="form">
+        <div class="form-group">
+          <label for="name">Bundle Name:</label>
+          <input type="text" name="name" id="name" required />
+        </div>
+        <div class="form-group">
+          <label for="duration">Duration (In Months):</label>
+          <input type="number" name="duration" id="duration" min="1" required />
+        </div>
+        <div class="form-group">
+          <label for="price">Price:</label>
+          <input type="number" name="price" id="price" min="1" required></input>
+        </div>
+        <div class="form-group">
+          <label for="description">Description:</label>
+          <textarea name="description" id="description" required></textarea>
+        </div>
+        <button type="submit" class="btn-primary">Add Bundle</button>
+      </form>
+    </div>
+
+    <script>
+      // Handle bundle form submission
+      document.getElementById("bundleForm").addEventListener("submit", (e) => {
+        e.preventDefault();
+        const name = document.getElementById("name").value;
+        const description = document.getElementById("description").value;
+        const duration = document.getElementById("duration").value;
+        const price = document.getElementById("price").value;
+
+        fetch("/bundles", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ name, duration, price, description}),
+        })
+          .then((response) => {
+            if (response.ok) {
+              fetchBundles(); // Refresh the bundle list
+              document.getElementById("bundleForm").reset(); // Clear the form
+            } else {
+              alert("Failed to add bundle.");
+            }
+          })
+          .catch((error) => console.error("Error adding bundle:", error));
+      });
+    </script>
+  </body>
+</html>
