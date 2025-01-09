@@ -5,22 +5,54 @@ const { checkAuthenticated } = require('../middlewares');
 
 const router = express.Router();
 
+// API route to get payment details as JSON
+router.get("/:paymentId", (req, res) => {
+    const { paymentId } = req.params;
+
+    const query = `
+      SELECT
+          payments.start_date, 
+          payments.expire_date, 
+          payments.price, 
+          payments.is_frozen,
+          payments.paid_amount,
+          bundles.name AS bundle_name,
+          clients.full_name
+      FROM payments
+      INNER JOIN clients ON payments.client_id = clients.id
+      LEFT JOIN bundles ON payments.bundle_id = bundles.id
+      WHERE payments.id = ? AND payments.expire_date >= DATE('now');
+    `;
+
+    db.get(query, [paymentId], (err, payment) => {
+        if (err) {
+            console.error("Error retrieving payment details:", err.message);
+            return res.status(500).json({ error: "Error retrieving payment details." });
+        }
+
+        if (!payment) {
+            return res.status(404).json({ error: "No active payment found for this client." });
+        }
+
+        res.json(payment); // Include `is_frozen` in the response
+    });
+});
 
 router.post('/', checkAuthenticated, (req, res) => {
-    const { client_id, start_date, expire_date, price, bundle_id } = req.body;
+    const { client_id, start_date, expire_date, price, bundle_id, paid_amount } = req.body;
 
     // Validate required fields
-    if (!client_id || !start_date || !expire_date || !price) {
+    if (!client_id || !start_date || !expire_date || !price || !paid_amount) {
         return res.status(400).json({ error: 'All fields are required.' });
     }
 
     // Insert the payment into the database
     const query = `
-        INSERT INTO payments (client_id, start_date, expire_date, price, bundle_id) 
-        VALUES (?, ?, ?, ?, ?)
+        INSERT INTO payments (client_id, start_date, expire_date, price, bundle_id, paid_amount) 
+        VALUES (?, ?, ?, ?, ?, ?)
     `;
 
-    db.run(query, [client_id, start_date, expire_date, price, bundle_id], function (err) {
+    db.run(query, [client_id, start_date, expire_date, price, bundle_id, paid_amount], function (err) {
         if (err) {
             console.error('Error adding payment:', err.message);
             return res.status(500).json({ error: 'Failed to add payment.' });
@@ -31,15 +63,18 @@ router.post('/', checkAuthenticated, (req, res) => {
 });
 
 // API route to get payment details as JSON
-router.get("/:clientId", (req, res) => {
+router.get("/byClientId/:clientId", (req, res) => {
     const { clientId } = req.params;
 
     const query = `
-      SELECT 
+      SELECT
+          payments.id,
           payments.start_date, 
           payments.expire_date, 
           payments.price, 
           payments.is_frozen,
+          payments.paid_amount,
+          payments.bundle_id,
           bundles.name AS bundle_name,
           clients.full_name
       FROM payments
@@ -61,6 +96,35 @@ router.get("/:clientId", (req, res) => {
         res.json(payment); // Include `is_frozen` in the response
     });
 });
+
+// Update an existing payment
+router.put('/:id', checkAuthenticated, (req, res) => {
+    const { id } = req.params;
+    const { start_date, expire_date, price, paid_amount, bundle_id } = req.body;
+
+    // Validation: Ensure required fields are provided
+    if (!start_date || !expire_date || !price || !paid_amount) {
+        return res.status(400).json({ error: 'Missing required fields' });
+    }
+
+    db.run(
+        `UPDATE payments SET start_date = ?, expire_date = ?, price = ?, paid_amount = ?, bundle_id = ? WHERE id = ?`,
+        [start_date, expire_date, price, paid_amount, bundle_id || null, id],
+        function (err) {
+            if (err) {
+                console.error("Error updating payment:", err.message);
+                return res.status(500).json({ error: "Error updating payment." });
+            }
+
+            if (this.changes === 0) {
+                return res.status(404).json({ error: "Payment not found." });
+            }
+
+            res.json({ id, start_date, expire_date, price, paid_amount, bundle_id });
+        }
+    );
+});
+
 
 
 router.post("/freeze-payment/:clientId", (req, res) => {

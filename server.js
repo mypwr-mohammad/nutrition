@@ -10,12 +10,15 @@ const bundlesRouter = require('./routers/bundles');
 const paymentsRouter = require('./routers/payments');
 const productsRouter = require('./routers/products');
 const reservationsRouter = require('./routers/reservations');
+const { checkAuthenticated, redirectIfAuthenticated, destroySession } = require('./middlewares');
 
 const app = express();
 
 
 // Middleware setup
 app.use(express.json());
+app.use('/css', express.static(__dirname + '/node_modules/bootstrap/dist/css'));
+app.use('/js', express.static(__dirname + '/node_modules/bootstrap/dist/js'));
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public'))); // For serving static files
 app.use( // Add session middleware
@@ -39,24 +42,13 @@ app.use('/payments', paymentsRouter);
 app.use('/products', productsRouter);
 app.use('/reservations', reservationsRouter);
 
-function redirectIfAuthenticated(req, res, next) {
-    if (req.session && req.session.loggedIn) {
-        return res.redirect('/dashboard');
-    }
-    next();
-}
-
-// Import the database setup function
-
-// Call the function to initialize the database
+// Import the database setup function Call the function to initialize the database
 setupDatabase();
-
 
 // Serve login page as default route
 app.get('/', redirectIfAuthenticated, (req, res) => {
     res.sendFile(path.join(__dirname, 'login.html'));
 });
-
 
 // Handle login and Redirect to the client addition page after successful login
 app.post('/login', (req, res) => {
@@ -87,14 +79,6 @@ app.post('/login', (req, res) => {
         });
     });
 });
-
-
-function checkAuthenticated(req, res, next) {
-    if (!req.session || !req.session.loggedIn) {
-        return res.redirect('/'); // Redirect to login if not authenticated
-    }
-    next();
-}
 
 // Serve the dashboard page after login
 app.get('/dashboard', checkAuthenticated, (req, res) => {
@@ -130,7 +114,6 @@ app.get('/clients-payments', checkAuthenticated, (req, res) => {
 app.get('/clients-products', checkAuthenticated, (req, res) => {
     res.sendFile(path.join(__dirname, 'clients-products.html'));
 });
-
 
 // Serve Products Management Page
 app.get('/products-dashboard', checkAuthenticated, (req, res) => {
@@ -182,8 +165,16 @@ app.get("/payment/:clientId", checkAuthenticated, (req, res) => {
     res.sendFile(path.join(__dirname, "payment.html"));
 });
 
+// Serve Payment Page
+app.get("/payment-edit/:clientId", checkAuthenticated, (req, res) => {
+    res.sendFile(path.join(__dirname, "payment-edit.html"));
+});
+
+//logout
+app.get("/logout", destroySession, (req, res) => {
+    res.sendFile(path.join(__dirname, "login.html"));
+});
 
 app.listen(3000, () => {
     console.log("Server is running on http://localhost:3000");
 });
-// Other routes (submit, names) remain unchanged...

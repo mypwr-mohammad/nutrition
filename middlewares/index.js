@@ -12,7 +12,18 @@ function checkAuthenticated(req, res, next) {
     next();
 }
 
+function destroySession(req, res, next) {
+    req.session.destroy((err) => {
+        if (err) {
+            console.error("Error destroying session:", err);
+            return next(err); // Pass error to the next middleware
+        }
+        next();
+    });
+}
+
 module.exports = {
     redirectIfAuthenticated,
-    checkAuthenticated
+    checkAuthenticated,
+    destroySession
 }

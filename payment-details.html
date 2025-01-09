@@ -3,43 +3,99 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Payment Details</title>
     <link
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
       rel="stylesheet"
     />
-    <title>Payment Details</title>
-    <link rel="stylesheet" href="/styles/styles.css" />
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <style>
+      body {
+        background: url("/images/form.jpg") no-repeat center center fixed;
+        background-size: cover;
+        font-family: Arial, sans-serif;
+      }
+
+      .container {
+        background-color: rgba(255, 255, 255, 0.9);
+        border-radius: 10px;
+        padding: 20px;
+        margin-top: 20px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+      }
+
+      .btn-primary {
+        background-color: #1e5875;
+        border-color: #1e5875;
+      }
+
+      .btn-primary:hover {
+        background-color: #154254;
+        border-color: #154254;
+      }
+
+      .edit-icon {
+        position: absolute;
+        right: 10px;
+        top: 50%;
+        transform: translateY(-50%);
+        cursor: pointer;
+        color: #1e5875;
+      }
+    </style>
   </head>
   <body>
     <header>
-      <div class="header-container">
-        <a href="/clients-payments" class="back-button">
-          <i class="fa-solid fa-arrow-left"></i>
+      <nav
+        class="navbar navbar-expand-lg navbar-dark d-flex align-items-center"
+        style="background-color: #1e5875"
+      >
+        <a href="/clients-payments" class="btn btn-link text-white">
+          <i
+            class="fa-solid fa-arrow-left"
+            style="font-size: 30px; margin-left: 20px"
+          ></i>
         </a>
-        <h1>Payment Details</h1>
-        <a href="/dashboard" class="home-button">
-          <i class="fa-solid fa-house"></i>
+        <div class="flex-grow-1 text-center">
+          <h1 style="color: white">Payment Details</h1>
+        </div>
+        <a href="/dashboard" class="btn btn-link text-white">
+          <i
+            class="fa-solid fa-house"
+            style="font-size: 30px; margin-right: 20px"
+          ></i>
         </a>
-      </div>
+      </nav>
     </header>
     <div class="container">
-      <h2>Client: <span id="clientName"></span></h2>
-      <div class="bundle-item card">
+      <div class="d-flex align-items-center position-relative mb-3">
+        <h2>Client: <span id="clientName"></span></h2>
+        <i
+          class="fa-solid fa-edit edit-icon"
+          onclick="redirectToEditPayment()"
+        ></i>
+      </div>
+      <div class="card p-3 mb-3">
         <p>Start Date: <strong id="startDate"></strong></p>
         <p>Expire Date: <strong id="expireDate"></strong></p>
         <p>Price: <strong id="price"></strong></p>
+        <p>Amount Paid: <strong id="paid_amount"></strong></p>
         <p>Bundle: <strong id="bundle"></strong></p>
         <p>Status: <strong id="status"></strong></p>
       </div>
-      <button id="freezeButton" class="btn-primary"></button>
+      <button id="freezeButton" class="btn btn-primary w-100"></button>
     </div>
+
     <script>
       document.addEventListener("DOMContentLoaded", () => {
         const clientId = location.pathname.split("/").pop();
         const freezeButton = document.getElementById("freezeButton");
 
         // Fetch payment details
-        fetch(`/payments/${clientId}`)
+        fetch(`/payments/byClientId/${clientId}`)
           .then((response) => {
             if (!response.ok)
               throw new Error("Failed to fetch payment details.");
@@ -55,6 +111,9 @@
             document.getElementById(
               "price"
             ).textContent = `${payment.price.toFixed(2)} NIS`;
+            document.getElementById(
+              "paid_amount"
+            ).textContent = `${payment.paid_amount.toFixed(2)} NIS`;
             document.getElementById("bundle").textContent =
               payment.bundle_name || "N/A";
             document.getElementById("status").textContent =
@@ -104,6 +163,11 @@
               alert(`Error: ${error.message}`);
             });
         }
+
+        // Redirect to edit payment page
+        window.redirectToEditPayment = () => {
+          location.href = `/payment-edit/${clientId}`;
+        };
       });
     </script>
   </body>

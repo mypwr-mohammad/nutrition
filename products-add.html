@@ -3,64 +3,133 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Add Products</title>
     <link
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
       rel="stylesheet"
     />
-    <title>Add Products</title>
-    <link rel="stylesheet" href="styles/styles.css" />
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <style>
+      body {
+        background: url("/images/form.jpg") no-repeat center center fixed;
+        background-size: cover;
+        font-family: Arial, sans-serif;
+      }
+
+      .container {
+        background-color: rgba(255, 255, 255, 0.9);
+        border-radius: 10px;
+        padding: 20px;
+        margin-top: 20px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+      }
+
+      .btn-primary {
+        background-color: #1e5875;
+        border-color: #1e5875;
+      }
+
+      .btn-primary:hover {
+        background-color: #154254;
+        border-color: #154254;
+      }
+    </style>
   </head>
   <body>
     <header>
-      <div class="header-container">
-        <a href="/products-dashboard" class="back-button">
-          <i class="fa-solid fa-arrow-left"></i>
-        </a>
-        <h1>Manage Products</h1>
-        <a href="/dashboard" class="home-button">
-          <i class="fa-solid fa-house"></i>
-        </a>
-      </div>
+      <nav class="navbar navbar-dark" style="background-color: #1e5875">
+        <div class="container-fluid">
+          <a href="/products-dashboard" class="btn btn-link text-white">
+            <i class="fa-solid fa-arrow-left" style="font-size: 30px"></i>
+          </a>
+          <h1 class="text-center text-white flex-grow-1">Manage Products</h1>
+          <a href="/dashboard" class="btn btn-link text-white">
+            <i class="fa-solid fa-house" style="font-size: 30px"></i>
+          </a>
+        </div>
+      </nav>
     </header>
-    <div class="container">
-      <form id="productForm" class="form">
-        <div class="form-group">
-          <label for="name">Product Name:</label>
-          <input type="text" name="name" id="name" required />
+
+    <div class="container mt-4">
+      <form id="productForm" class="needs-validation" novalidate>
+        <div class="mb-3">
+          <label for="name" class="form-label">Product Name:</label>
+          <input
+            type="text"
+            class="form-control"
+            name="name"
+            id="name"
+            required
+          />
+          <div class="invalid-feedback">Product name is required.</div>
         </div>
-        <div class="form-group">
-          <label for="price">Price:</label>
-          <input type="number" name="price" id="price" step="0.01" required />
+        <div class="mb-3">
+          <label for="price" class="form-label">Price:</label>
+          <input
+            type="number"
+            class="form-control"
+            name="price"
+            id="price"
+            step="0.01"
+            required
+          />
+          <div class="invalid-feedback">Price is required.</div>
         </div>
-        <div class="form-group">
-          <label for="stock">Stock:</label>
-          <input type="number" name="stock" id="stock" required />
+        <div class="mb-3">
+          <label for="stock" class="form-label">Stock:</label>
+          <input
+            type="number"
+            class="form-control"
+            name="stock"
+            id="stock"
+            required
+          />
+          <div class="invalid-feedback">Stock is required.</div>
         </div>
-        <button type="submit" class="btn-primary">Add Product</button>
+        <div class="d-grid">
+          <button type="submit" class="btn btn-primary">Add Product</button>
+        </div>
       </form>
     </div>
 
     <script>
-      // Handle product form submission
-      document.getElementById("productForm").addEventListener("submit", (e) => {
-        e.preventDefault();
-        const name = document.getElementById("name").value;
-        const price = document.getElementById("price").value;
-        const stock = document.getElementById("stock").value;
+      // Bootstrap validation
+      (() => {
+        const forms = document.querySelectorAll(".needs-validation");
+        Array.from(forms).forEach((form) => {
+          form.addEventListener("submit", (event) => {
+            if (!form.checkValidity()) {
+              event.preventDefault();
+              event.stopPropagation();
+            } else {
+              event.preventDefault();
+              const name = document.getElementById("name").value;
+              const price = document.getElementById("price").value;
+              const stock = document.getElementById("stock").value;
 
-        fetch("/products", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ name, price, stock }),
-        })
-          .then((response) => {
-            if (response.ok) {
-              fetchProducts(); // Refresh the product list
-              document.getElementById("productForm").reset(); // Clear the form
+              fetch("/products", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ name, price, stock }),
+              })
+                .then((response) => {
+                  if (response.ok) {
+                    alert("Product added successfully.");
+                    form.reset();
+                    form.classList.remove("was-validated");
+                  } else {
+                    throw new Error("Failed to add product.");
+                  }
+                })
+                .catch((error) => alert(error.message));
             }
-          })
-          .catch((error) => console.error("Error adding product:", error));
-      });
+            form.classList.add("was-validated");
+          });
+        });
+      })();
     </script>
   </body>
 </html>

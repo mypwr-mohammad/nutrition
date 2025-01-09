@@ -63,6 +63,8 @@ function setupDatabase() {
         )
     `);
 
+
+
     // Payments table
     db.run(`
         CREATE TABLE IF NOT EXISTS payments (
@@ -78,6 +80,39 @@ function setupDatabase() {
             FOREIGN KEY (bundle_id) REFERENCES bundles (id)
         )
     `);
+
+    const query = `PRAGMA table_info(payments);`;
+    db.all(query, [], (err, rows) => {
+        if (err) {
+            console.error("Error checking table info:", err.message);
+            return;
+        }
+
+        // Check if the 'paid_amount' column exists
+        const columnExists = rows.some((row) => row.name === "paid_amount");
+
+        if (!columnExists) {
+            // Add the column if it doesn't exist
+            const addColumnQuery = `
+            ALTER TABLE payments ADD COLUMN paid_amount REAL DEFAULT 0.0;
+          `;
+            db.run(`
+            UPDATE payments SET paid_amount = price WHERE paid_amount = 0.0;
+            `);
+
+            db.run(addColumnQuery, (err) => {
+                if (err) {
+                    console.error("Error adding column 'paid_amount':", err.message);
+                } else {
+                    console.log("Column 'paid_amount' added successfully.");
+                }
+            });
+        } else {
+            console.log("Column 'paid_amount' already exists.");
+        }
+    });
+
+
 
     // Reservations table
     db.run(`

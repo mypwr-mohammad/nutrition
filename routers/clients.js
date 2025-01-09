@@ -8,12 +8,18 @@ const router = express.Router();
 // Fetch all clients
 router.get("/", checkAuthenticated, (req, res) => {
     const query = `
-     SELECT clients.*, SUM(DATE(payments.expire_date) > DATE()) > 0 as has_active_payment
-        FROM clients
-        LEFT JOIN payments ON clients.id = payments.client_id
-        group by clients.id
-        ORDER BY clients.full_name ASC
-    `;
+    SELECT clients.*, 
+           SUM(DATE(payments.expire_date) > DATE()) > 0 as has_active_payment, payments.price, payments.paid_amount
+    FROM clients
+    LEFT JOIN payments ON clients.id = payments.client_id
+    GROUP BY clients.id
+    ORDER BY 
+      CASE
+        WHEN clients.full_name GLOB '[آ-ي]*' THEN 1 -- Arabic names first
+        ELSE 2 -- English or other names second
+      END,
+      clients.full_name COLLATE NOCASE -- Alphabetical order (case-insensitive)
+  `;
 
     db.all(query, [], (err, rows) => {
         if (err) {

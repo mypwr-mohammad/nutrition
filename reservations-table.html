@@ -7,25 +7,62 @@
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
       rel="stylesheet"
     />
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
     <title>View Reservations</title>
-    <link rel="stylesheet" href="styles/styles.css" />
+    <style>
+      body {
+        background: url("/images/table.jpg") no-repeat center center fixed;
+        background-size: cover;
+        font-family: Arial, sans-serif;
+      }
+      .container {
+        background-color: rgba(255, 255, 255, 0.9);
+        border-radius: 10px;
+        padding: 20px;
+        margin-top: 20px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+      }
+      .search-input {
+        margin-bottom: 20px;
+      }
+      .table-container {
+        overflow-x: auto;
+      }
+      th {
+        background-color: #1e5875 !important;
+        color: white !important;
+      }
+    </style>
   </head>
   <body>
     <header>
-      <div class="header-container">
-        <a href="/reservations-dashboard" class="back-button">
-          <i class="fa-solid fa-arrow-left"></i>
-        </a>
-        <h1>View Reservations</h1>
-        <a href="/dashboard" class="home-button">
-          <i class="fa-solid fa-house"></i>
-        </a>
-      </div>
+      <nav class="navbar navbar-dark" style="background-color: #1e5875">
+        <div class="container-fluid">
+          <a href="/reservations-dashboard" class="btn btn-link text-white">
+            <i class="fa-solid fa-arrow-left" style="font-size: 30px"></i>
+          </a>
+          <h1 class="text-center text-white flex-grow-1">View Reservations</h1>
+          <a href="/dashboard" class="btn btn-link text-white">
+            <i class="fa-solid fa-house" style="font-size: 30px"></i>
+          </a>
+        </div>
+      </nav>
     </header>
-    <div class="container">
+
+    <div class="container mt-4">
+      <input
+        type="text"
+        id="searchInput"
+        class="form-control search-input"
+        placeholder="Search by Client Name"
+      />
+
       <div class="table-container">
-        <table class="styled-table">
-          <thead>
+        <table class="table table-hover table-bordered">
+          <thead class="table-dark">
             <tr>
               <th>Client Name</th>
               <th>Phone Number</th>
@@ -41,38 +78,53 @@
     </div>
 
     <script>
+      let allReservations = []; // Store all reservations for search
+
       // Fetch and display reservations sorted by closest date and time
       function fetchReservations() {
         fetch("/reservations")
           .then((response) => response.json())
           .then((reservations) => {
-            const reservationList = document.getElementById("reservationList");
-            reservationList.innerHTML = "";
-
-            if (reservations.length === 0) {
-              const row = document.createElement("tr");
-              row.innerHTML = `
-                <td colspan="4" style="text-align: center;">No reservations found.</td>
-              `;
-              reservationList.appendChild(row);
-              return;
-            }
-
-            reservations.forEach((reservation) => {
-              const row = document.createElement("tr");
-              row.innerHTML = `
-                <td>${reservation.client_name}</td>
-                <td>${reservation.phone_number}</td>
-                <td>${reservation.reservation_date}</td>
-                <td>${reservation.reservation_time}</td>
-              `;
-              reservationList.appendChild(row);
-            });
+            allReservations = reservations; // Store reservations for search
+            displayReservations(reservations);
           })
           .catch((error) =>
             console.error("Error fetching reservations:", error)
           );
       }
+
+      // Display reservations in the table
+      function displayReservations(reservations) {
+        const reservationList = document.getElementById("reservationList");
+        reservationList.innerHTML = "";
+
+        if (reservations.length === 0) {
+          reservationList.innerHTML = `
+            <tr>
+              <td colspan="4" class="text-center">No reservations found.</td>
+            </tr>`;
+          return;
+        }
+
+        reservations.forEach((reservation) => {
+          const row = document.createElement("tr");
+          row.innerHTML = `
+            <td>${reservation.client_name}</td>
+            <td>${reservation.phone_number}</td>
+            <td>${reservation.reservation_date}</td>
+            <td>${reservation.reservation_time}</td>`;
+          reservationList.appendChild(row);
+        });
+      }
+
+      // Search reservations by client name
+      document.getElementById("searchInput").addEventListener("input", (e) => {
+        const searchTerm = e.target.value.toLowerCase();
+        const filteredReservations = allReservations.filter((reservation) =>
+          reservation.client_name.toLowerCase().includes(searchTerm)
+        );
+        displayReservations(filteredReservations);
+      });
 
       // Fetch reservations on page load
       window.onload = fetchReservations;

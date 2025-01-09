@@ -4,39 +4,82 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Login</title>
-    <link rel="stylesheet" href="styles/styles.css" />
+    <link rel="stylesheet" href="/css/bootstrap.min.css" />
+    <style>
+      body {
+        background: url("/images/bg.jpg") no-repeat center center fixed;
+        background-size: cover;
+        height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin: 0;
+      }
+
+      .card {
+        backdrop-filter: blur(10px);
+        background-color: rgba(255, 255, 255, 0.8);
+        border-radius: 15px;
+      }
+
+      .btn-custom {
+        background-color: #1e5875;
+        border-color: #1e5875;
+        color: white;
+      }
+
+      .btn-custom:hover {
+        background-color: #598da5;
+      }
+    </style>
   </head>
-  <body class="login-body">
-    <div class="login-container">
-      <img src="images/logo.png" alt="App Logo" class="login-logo" />
-      <form class="login-form" id="loginForm">
-        <h1>Login</h1>
-        <div id="errorMessage" class="error-message"></div>
-        <input type="text" name="username" placeholder="Username" required />
-        <input
-          type="password"
-          name="password"
-          placeholder="Password"
-          required
+  <body>
+    <div class="card shadow p-4" style="width: 360px">
+      <div class="text-center mb-4">
+        <img
+          src="images/logo.png"
+          alt="App Logo"
+          class="img-fluid mb-2"
+          style="width: 300px"
         />
-        <button type="submit">Login</button>
+        <h1 class="h4">Login</h1>
+      </div>
+      <form id="loginForm" class="row g-3 needs-validation" novalidate>
+        <div class="mb-3">
+          <input
+            type="text"
+            id="username"
+            name="username"
+            class="form-control"
+            placeholder="Username"
+            required
+          />
+        </div>
+        <div class="mb-3 needs-validation">
+          <input
+            type="password"
+            id="password"
+            name="password"
+            class="form-control"
+            placeholder="Password"
+            required
+          />
+        </div>
+        <div class="d-grid">
+          <button type="submit" class="btn btn-custom">Login</button>
+        </div>
       </form>
     </div>
 
+    <script src="/js/bootstrap.bundle.min.js"></script>
     <script>
       document
         .getElementById("loginForm")
         .addEventListener("submit", function (e) {
           e.preventDefault(); // Prevent default form submission
 
-          const username = e.target.username.value.trim();
-          const password = e.target.password.value.trim();
-
-          // Validate inputs
-          if (!username || !password) {
-            displayError("Username and password are required.");
-            return;
-          }
+          const username = document.getElementById("username").value.trim();
+          const password = document.getElementById("password").value.trim();
 
           // Send login request
           fetch("/login", {
@@ -54,26 +97,11 @@
             })
             .then((data) => {
               if (data.success) {
-                clearError(); // Clear any existing error messages
                 window.location.href = data.redirect; // Redirect on success
               }
             })
-            .catch((error) => {
-              displayError(error.message); // Display error message
-            });
+            .catch((error) => {});
         });
-
-      function displayError(message) {
-        const errorMessage = document.getElementById("errorMessage");
-        errorMessage.textContent = message;
-        errorMessage.style.display = "block";
-      }
-
-      function clearError() {
-        const errorMessage = document.getElementById("errorMessage");
-        errorMessage.textContent = "";
-        errorMessage.style.display = "none";
-      }
     </script>
   </body>
 </html>

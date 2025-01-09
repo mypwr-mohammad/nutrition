@@ -3,45 +3,84 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Purchase Product</title>
     <link
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
       rel="stylesheet"
     />
-    <title>Purchase Product</title>
-    <link rel="stylesheet" href="/styles/styles.css" />
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.1.0-beta.1/css/select2.min.css"
+      rel="stylesheet"
+    />
+    <style>
+      body {
+        background: url("/images/table.jpg") no-repeat center center fixed;
+        background-size: cover;
+        font-family: Arial, sans-serif;
+      }
+
+      .container {
+        background-color: rgba(255, 255, 255, 0.9);
+        border-radius: 10px;
+        padding: 20px;
+        margin-top: 20px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+      }
+    </style>
   </head>
   <body>
     <header>
-      <div class="header-container">
-        <a href="/clients-dashboard" class="back-button">
-          <i class="fa-solid fa-arrow-left"></i>
+      <nav
+        class="navbar navbar-expand-lg navbar-dark d-flex align-items-center"
+        style="background-color: #1e5875"
+      >
+        <a href="/clients-dashboard" class="btn btn-link text-white">
+          <i
+            class="fa-solid fa-arrow-left"
+            style="font-size: 30px; margin-left: 20px"
+          ></i>
         </a>
-        <h1>Purchase Product</h1>
-        <a href="/dashboard" class="home-button">
-          <i class="fa-solid fa-house"></i>
+        <div class="flex-grow-1 text-center">
+          <h1 style="color: white">Purchase Product</h1>
+        </div>
+        <a href="/dashboard" class="btn btn-link text-white">
+          <i
+            class="fa-solid fa-house"
+            style="font-size: 30px; margin-right: 20px"
+          ></i>
         </a>
-      </div>
+      </nav>
     </header>
     <div class="container">
       <h2>Select a Client</h2>
-      <select id="clientDropdown" class="form-control">
-        <option value="">Select a client</option>
-      </select>
+      <select id="clientDropdown" class="form-control"></select>
 
       <h2>Select a Product</h2>
-      <select id="productDropdown" class="form-control" disabled>
-        <option value="">Select a product</option>
-      </select>
+      <select id="productDropdown" class="form-control" disabled></select>
 
-      <div id="storedSelections" class="stored-selections">
+      <div id="storedSelections" class="stored-selections mt-3">
         <h3>Selected:</h3>
         <p id="storedClient">No client selected</p>
         <p id="storedProduct">No product selected</p>
       </div>
 
-      <button id="buyButton" class="btn-primary" disabled>Buy</button>
+      <button
+        id="buyButton"
+        class="btn btn-primary w-100"
+        style="background-color: #1e5875"
+        disabled
+      >
+        Buy
+      </button>
     </div>
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.1.0-beta.1/js/select2.min.js"></script>
     <script>
       const clientDropdown = document.getElementById("clientDropdown");
       const productDropdown = document.getElementById("productDropdown");
@@ -52,44 +91,68 @@
       let selectedClientId = null;
       let selectedProductId = null;
 
+      // Reset dropdowns and selections on page load
+      function resetDropdowns() {
+        clientDropdown.innerHTML = '<option value="">None selected</option>';
+        productDropdown.innerHTML = '<option value="">None selected</option>';
+        storedClient.textContent = "None selected";
+        storedProduct.textContent = "None selected";
+        productDropdown.disabled = true; // Disable product dropdown initially
+        selectedClientId = null;
+        selectedProductId = null;
+        toggleBuyButton();
+      }
+
+      window.onload = () => {
+        resetDropdowns();
+        fetchClients();
+        fetchProducts();
+      };
+
       // Fetch clients and populate the dropdown
-      fetch("/clients")
-        .then((response) => response.json())
-        .then((clients) => {
-          clients.forEach((client) => {
-            const option = document.createElement("option");
-            option.value = client.id;
-            option.textContent = `${client.full_name} (${client.phone_number})`;
-            clientDropdown.appendChild(option);
+      function fetchClients() {
+        fetch("/clients")
+          .then((response) => response.json())
+          .then((clients) => {
+            clients.forEach((client) => {
+              const option = document.createElement("option");
+              option.value = client.id;
+              option.textContent = `${client.full_name}`;
+              clientDropdown.appendChild(option);
+            });
+          })
+          .catch((error) => {
+            console.error("Error fetching clients:", error);
           });
-        })
-        .catch((error) => {
-          console.error("Error fetching clients:", error);
-        });
+      }
 
       // Fetch products and populate the dropdown
-      fetch("/products")
-        .then((response) => response.json())
-        .then((products) => {
-          products.forEach((product) => {
-            const option = document.createElement("option");
-            option.value = product.id;
-            option.textContent = `${product.name} (Stock: ${product.stock})`;
-            productDropdown.appendChild(option);
+      function fetchProducts() {
+        fetch("/products")
+          .then((response) => response.json())
+          .then((products) => {
+            products
+              .filter((product) => product.stock > 0) // Show only products with stock > 0
+              .forEach((product) => {
+                const option = document.createElement("option");
+                option.value = product.id;
+                option.textContent = `${product.name} (Stock: ${product.stock})`;
+                productDropdown.appendChild(option);
+              });
+          })
+          .catch((error) => {
+            console.error("Error fetching products:", error);
           });
-        })
-        .catch((error) => {
-          console.error("Error fetching products:", error);
-        });
+      }
 
       // Handle client selection
       clientDropdown.addEventListener("change", () => {
         selectedClientId = clientDropdown.value;
         storedClient.textContent = selectedClientId
           ? clientDropdown.options[clientDropdown.selectedIndex].text
-          : "No client selected";
+          : "None selected";
         toggleBuyButton();
-        productDropdown.disabled = !selectedClientId;
+        productDropdown.disabled = !selectedClientId; // Enable product dropdown if client is selected
       });
 
       // Handle product selection
@@ -97,7 +160,7 @@
         selectedProductId = productDropdown.value;
         storedProduct.textContent = selectedProductId
           ? productDropdown.options[productDropdown.selectedIndex].text
-          : "No product selected";
+          : "None selected";
         toggleBuyButton();
       });
 
@@ -129,6 +192,9 @@
           })
           .catch((error) => console.error("Error purchasing product:", error));
       });
+
+      // Clear selected values on page unload
+      window.addEventListener("beforeunload", resetDropdowns);
     </script>
   </body>
 </html>

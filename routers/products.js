@@ -32,6 +32,22 @@ router.get('/', checkAuthenticated, (req, res) => {
     });
 });
 
+// Delete a product
+router.delete('/:id', checkAuthenticated, (req, res) => {
+    const { id } = req.params;
+
+    db.run(`DELETE FROM products WHERE id = ?`, [id], function (err) {
+        if (err) {
+            console.error("Error deleting product:", err.message);
+            res.status(500).json({ error: "Error deleting client." });
+        } else if (this.changes === 0) {
+            res.status(404).json({ error: "Product not found." });
+        } else {
+            res.status(200).json({ success: true, message: "Product deleted successfully." });
+        }
+    });
+});
+
 // Route to handle product purchase
 router.post("/sell", (req, res) => {
     const { client_id, product_id, quantity = 1 } = req.body;

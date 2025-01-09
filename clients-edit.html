@@ -7,56 +7,125 @@
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
       rel="stylesheet"
     />
-    <title>Edit Client</title>
-    <link rel="stylesheet" href="/styles/styles.css" />
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
     <link
       rel="stylesheet"
       href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css"
     />
+    <title>Edit Client</title>
+    <style>
+      body {
+        background: url("/images/form.jpg") no-repeat center center fixed;
+        background-size: cover;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        margin: 0;
+      }
+      .container {
+        background-color: rgba(255, 255, 255, 0.9);
+        border-radius: 10px;
+        padding: 30px;
+        margin-top: 10px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        max-width: 600px;
+        width: 100%;
+      }
+    </style>
   </head>
   <body>
     <header>
-      <div class="header-container">
-        <a href="/clients-table" class="back-button">
-          <i class="fa-solid fa-arrow-left"></i>
-        </a>
-        <h1>Edit Client</h1>
-        <a href="/dashboard" class="home-button">
-          <i class="fa-solid fa-house"></i>
-        </a>
-      </div>
+      <nav
+        class="navbar d-flex align-items-center"
+        data-bs-theme="dark"
+        style="background-color: #1e5875"
+      >
+        <div class="d-flex align-items-center">
+          <a href="/clients-table" class="btn btn-link text-white">
+            <i
+              class="fa-solid fa-arrow-left"
+              style="font-size: 30px; margin-left: 20px"
+            ></i>
+          </a>
+        </div>
+        <div class="flex-grow-1 text-center">
+          <h1 style="color: white">Edit Client</h1>
+        </div>
+        <div class="d-flex align-items-center">
+          <a href="/dashboard" class="btn btn-link text-white">
+            <i
+              class="fa-solid fa-house"
+              style="font-size: 30px; margin-right: 20px"
+            ></i>
+          </a>
+        </div>
+      </nav>
     </header>
     <div class="container">
-      <form id="editClientForm" class="form">
-        <div class="form-group">
-          <label for="full_name">Full Name:</label>
-          <input type="text" name="full_name" id="full_name" required />
+      <form id="editClientForm" class="needs-validation" novalidate>
+        <div class="mb-3">
+          <label for="full_name" class="form-label">Full Name:</label>
+          <input
+            type="text"
+            id="full_name"
+            name="full_name"
+            class="form-control"
+            required
+          />
+          <div class="invalid-feedback">Full Name is required.</div>
         </div>
-        <div class="form-group">
-          <label for="date_of_birth">Date of Birth:</label>
-          <input type="date" name="date_of_birth" id="date_of_birth" required />
+        <div class="mb-3">
+          <label for="date_of_birth" class="form-label">Date of Birth:</label>
+          <input
+            type="text"
+            id="date_of_birth"
+            name="date_of_birth"
+            class="form-control"
+            required
+          />
+          <div class="invalid-feedback">Date of Birth is required.</div>
         </div>
-        <div class="form-group">
-          <label for="phone_number">Phone Number:</label>
-          <input type="tel" name="phone_number" id="phone_number" required />
+        <div class="mb-3">
+          <label for="phone_number" class="form-label">Phone Number:</label>
+          <input
+            type="tel"
+            id="phone_number"
+            name="phone_number"
+            class="form-control"
+            required
+          />
+          <div class="invalid-feedback">Phone Number is required.</div>
         </div>
-        <div class="form-group">
-          <label for="notes">Notes:</label>
-          <textarea name="notes" id="notes" required></textarea>
+        <div class="mb-3">
+          <label for="notes" class="form-label">Notes:</label>
+          <textarea
+            id="notes"
+            name="notes"
+            rows="2"
+            class="form-control"
+          ></textarea>
         </div>
-        <button type="submit" class="btn-primary">Save Changes</button>
+        <button
+          type="submit"
+          class="btn btn-primary w-100"
+          style="background-color: #1e5875"
+        >
+          Save Changes
+        </button>
       </form>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/js/bootstrap.bundle.min.js"></script>
     <script>
-      // Initialize Flatpickr
       flatpickr("#date_of_birth", {
         dateFormat: "Y-m-d",
       });
-      const clientId = location.pathname.split("/").pop();
-      const errorMessage = document.getElementById("errorMessage");
 
-      // Fetch client data
+      const clientId = location.pathname.split("/").pop();
+
       fetch(`/clients/${clientId}`)
         .then((response) => {
           if (!response.ok) throw new Error("Failed to fetch client details.");
@@ -69,40 +138,45 @@
           document.getElementById("notes").value = client.notes || "";
         })
         .catch((error) => {
-          errorMessage.textContent = error.message;
+          alert(error.message);
         });
 
-      // Save changes
-      document
-        .getElementById("editClientForm")
-        .addEventListener("submit", (event) => {
-          event.preventDefault();
+      (() => {
+        const form = document.getElementById("editClientForm");
+        form.addEventListener("submit", (event) => {
+          if (!form.checkValidity()) {
+            event.preventDefault();
+            event.stopPropagation();
+          } else {
+            event.preventDefault();
+            const updatedClient = {
+              full_name: document.getElementById("full_name").value,
+              date_of_birth: document.getElementById("date_of_birth").value,
+              phone_number: document.getElementById("phone_number").value,
+              notes: document.getElementById("notes").value,
+            };
 
-          const updatedClient = {
-            full_name: document.getElementById("full_name").value,
-            date_of_birth: document.getElementById("date_of_birth").value,
-            phone_number: document.getElementById("phone_number").value,
-            notes: document.getElementById("notes").value,
-          };
-
-          fetch(`/clients/${clientId}`, {
-            method: "PUT",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(updatedClient),
-          })
-            .then((response) => {
-              if (!response.ok) {
-                return response.text().then((text) => {
-                  throw new Error(text);
-                });
-              }
-              alert("Client updated successfully.");
-              location.href = "/clients-table";
+            fetch(`/clients/${clientId}`, {
+              method: "PUT",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(updatedClient),
             })
-            .catch((error) => {
-              errorMessage.textContent = error.message;
-            });
+              .then((response) => {
+                if (!response.ok) {
+                  return response.text().then((text) => {
+                    throw new Error(text);
+                  });
+                }
+                alert("Client updated successfully.");
+                location.href = "/clients-table";
+              })
+              .catch((error) => {
+                alert(error.message);
+              });
+          }
+          form.classList.add("was-validated");
         });
+      })();
     </script>
   </body>
 </html>

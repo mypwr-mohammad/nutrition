@@ -7,48 +7,123 @@
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
       rel="stylesheet"
     />
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
     <title>Manage Bundles</title>
-    <link rel="stylesheet" href="styles/styles.css" />
+    <style>
+      body {
+        background: url("/images/table.jpg") no-repeat center center fixed;
+        background-size: cover;
+        font-family: Arial, sans-serif;
+      }
+
+      .container {
+        background-color: rgba(255, 255, 255, 0.9);
+        border-radius: 10px;
+        padding: 20px;
+        margin-top: 20px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+      }
+
+      th {
+        background-color: #1e5875 !important;
+        color: white !important;
+      }
+    </style>
   </head>
   <body>
     <header>
-      <div class="header-container">
-        <a href="/bundles-dashboard" class="back-button">
-          <i class="fa-solid fa-arrow-left"></i>
-        </a>
-        <h1>Manage Bundles</h1>
-        <a href="/dashboard" class="home-button">
-          <i class="fa-solid fa-house"></i>
-        </a>
-      </div>
+      <nav
+        class="navbar navbar-expand-lg navbar-dark"
+        style="background-color: #1e5875"
+      >
+        <div class="container-fluid">
+          <a href="/bundles-dashboard" class="btn btn-link text-white">
+            <i class="fa-solid fa-arrow-left" style="font-size: 30px"></i>
+          </a>
+          <div class="mx-auto">
+            <h1 style="color: white">Manage Bundles</h1>
+          </div>
+          <a href="/dashboard" class="btn btn-link text-white">
+            <i class="fa-solid fa-house" style="font-size: 30px"></i>
+          </a>
+        </div>
+      </nav>
     </header>
     <div class="container">
-      <h2>Bundle Table</h2>
-      <div id="bundleList">
-        <p>List of bundles will be displayed here.</p>
+      <div class="mb-3">
+        <input
+          type="text"
+          id="searchInput"
+          class="form-control"
+          placeholder="Search bundles by name"
+          oninput="searchBundles()"
+        />
       </div>
+      <table class="table table-hover table-bordered">
+        <thead>
+          <tr>
+            <th>Bundle Name</th>
+            <th>Duration (Months)</th>
+            <th>Price</th>
+            <th>Description</th>
+          </tr>
+        </thead>
+        <tbody id="bundleTableBody">
+          <!-- Bundles will be dynamically populated here -->
+        </tbody>
+      </table>
     </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/js/bootstrap.bundle.min.js"></script>
     <script>
+      let allBundles = []; // Store all bundles for search
+
       // Function to fetch and display bundles
       function fetchBundles() {
         fetch("/bundles")
           .then((response) => response.json())
           .then((bundles) => {
-            const bundleList = document.getElementById("bundleList");
-            bundleList.innerHTML = ""; // Clear the existing content
-            bundles.forEach((bundle) => {
-              const bundleItem = document.createElement("div");
-              bundleItem.className = "bundle-item card";
-              bundleItem.innerHTML = `
-                <p><strong>${bundle.name}</strong></p>
-                <p>Duration: ${bundle.duration} months</p>
-                <p>price: ${bundle.price} months</p>
-                <p>Description: ${bundle.description}</p>
-              `;
-              bundleList.appendChild(bundleItem);
-            });
+            allBundles = bundles; // Store bundles for search
+            displayBundles(bundles);
           })
           .catch((error) => console.error("Error fetching bundles:", error));
+      }
+
+      // Function to display bundles in the table
+      function displayBundles(bundles) {
+        const bundleTableBody = document.getElementById("bundleTableBody");
+        bundleTableBody.innerHTML = "";
+
+        if (bundles.length === 0) {
+          bundleTableBody.innerHTML =
+            '<tr><td colspan="4" class="text-center">No bundles found.</td></tr>';
+          return;
+        }
+
+        bundles.forEach((bundle) => {
+          const row = document.createElement("tr");
+          row.innerHTML = `
+            <td>${bundle.name}</td>
+            <td>${bundle.duration}</td>
+            <td>${bundle.price}</td>
+            <td>${bundle.description}</td>
+          `;
+          bundleTableBody.appendChild(row);
+        });
+      }
+
+      // Function to search bundles by name
+      function searchBundles() {
+        const searchTerm = document
+          .getElementById("searchInput")
+          .value.toLowerCase();
+        const filteredBundles = allBundles.filter((bundle) =>
+          bundle.name.toLowerCase().includes(searchTerm)
+        );
+        displayBundles(filteredBundles);
       }
 
       // Fetch bundles on page load

@@ -7,31 +7,84 @@
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
       rel="stylesheet"
     />
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
     <title>Manage Clients</title>
-    <link rel="stylesheet" href="/styles/styles.css" />
+    <style>
+      body {
+        background: url("/images/table.jpg") no-repeat center center fixed;
+        background-size: cover;
+        margin: 0;
+        font-family: Arial, sans-serif;
+      }
+      .container {
+        background-color: rgba(255, 255, 255, 0.9);
+        border-radius: 10px;
+        padding: 20px;
+        margin-top: 20px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+      }
+      th {
+        background-color: #1e5875 !important;
+        color: white !important;
+      }
+      .cell-payment-on {
+        background-color: #4caf50 !important;
+      }
+      .cell-payment-off {
+        background-color: #f44336 !important;
+      }
+    </style>
   </head>
   <body>
     <header>
-      <div class="header-container">
-        <a href="/clients-dashboard" class="back-button">
-          <i class="fa-solid fa-arrow-left"></i>
-        </a>
-        <h1>Manage Clients</h1>
-        <a href="/dashboard" class="home-button">
-          <i class="fa-solid fa-house"></i>
-        </a>
-      </div>
+      <nav
+        class="navbar d-flex align-items-center"
+        data-bs-theme="dark"
+        style="background-color: #1e5875"
+      >
+        <div class="d-flex align-items-center">
+          <a href="/clients-dashboard" class="btn btn-link text-white">
+            <i
+              class="fa-solid fa-arrow-left"
+              style="font-size: 30px; margin-left: 20px"
+            ></i>
+          </a>
+        </div>
+        <div class="flex-grow-1 text-center">
+          <h1 style="color: white">Clients Table</h1>
+        </div>
+        <div class="d-flex align-items-center">
+          <a href="/dashboard" class="btn btn-link text-white">
+            <i
+              class="fa-solid fa-house"
+              style="font-size: 30px; margin-right: 20px"
+            ></i>
+          </a>
+        </div>
+      </nav>
     </header>
-    <div class="manage-clients-container">
-      <table class="styled-clients-table">
+    <div class="container">
+      <div class="mb-3">
+        <input
+          type="text"
+          id="searchInput"
+          class="form-control"
+          placeholder="Search by Client's Name"
+          oninput="searchClients()"
+        />
+      </div>
+      <table class="table table-hover table-bordered">
         <thead>
           <tr>
-            <th class="col-name">Full Name</th>
-            <th class="col-birth">Date of Birth</th>
-            <th class="col-number">Phone Number</th>
-            <th class="col-notes">Notes</th>
-            <th class="col-actions">Actions</th>
-            <th class="col-status">Status</th>
+            <th scope="col">Full Name</th>
+            <th scope="col">Date of Birth</th>
+            <th scope="col">Phone Number</th>
+            <th scope="col">Notes</th>
+            <th scope="col">Actions</th>
+            <th scope="col">Status</th>
           </tr>
         </thead>
         <tbody id="clientsList">
@@ -40,51 +93,62 @@
       </table>
     </div>
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/js/bootstrap.bundle.min.js"></script>
     <script>
+      let allClients = []; // Store all clients for search
+
       function fetchClients() {
         fetch("/clients")
           .then((response) => response.json())
           .then((clients) => {
-            const clientsList = document.getElementById("clientsList");
-            clientsList.innerHTML = "";
-
-            if (clients.length === 0) {
-              const row = document.createElement("tr");
-              row.innerHTML = `
-                <td colspan="6" style="text-align: center;">No clients found.</td>
-              `;
-              clientsList.appendChild(row);
-              return;
-            }
-
-            clients.forEach((client) => {
-              const row = document.createElement("tr");
-              row.innerHTML = `
-                <td>${client.full_name}</td>
-                <td>${client.date_of_birth}</td>
-                <td>${client.phone_number}</td>
-                <td>${client.notes || "N/A"}</td>
-                <td class="action-icons">
-                  <button onclick="location.href='/clients-edit/${client.id}'">
-                    <i class="fas fa-edit edit-icon"></i>
-                  </button>
-                  <button onclick="deleteClient(${client.id})">
-                    <i class="fas fa-trash delete-icon"></i>
-                  </button>
-                </td>
-                <td
-                  class="${
-                    client.has_active_payment
-                      ? "cell-payment-on"
-                      : "cell-payment-off"
-                  }"
-                  \>
-                </td>
-              `;
-              clientsList.appendChild(row);
-            });
+            allClients = clients; // Store clients for search
+            displayClients(clients);
           })
           .catch((error) => console.error("Error fetching clients:", error));
+      }
+
+      function displayClients(clients) {
+        const clientsList = document.getElementById("clientsList");
+        clientsList.innerHTML = "";
+
+        if (clients.length === 0) {
+          clientsList.innerHTML = `<tr><td colspan="6" class="text-center">No clients found.</td></tr>`;
+          return;
+        }
+
+        clients.forEach((client) => {
+          const row = document.createElement("tr");
+          row.innerHTML = `
+            <td>${client.full_name}</td>
+            <td>${client.date_of_birth}</td>
+            <td>${client.phone_number}</td>
+            <td>${client.notes || "N/A"}</td>
+            <td>
+              <button class="btn btn-sm" onclick="location.href='/clients-edit/${
+                client.id
+              }'">
+                <i class="fas fa-edit"></i>
+              </button>
+              <button class="btn btn-sm" onclick="deleteClient(${client.id})">
+                <i class="fas fa-trash"></i>
+              </button>
+            </td>
+            <td class="${
+              client.has_active_payment ? "cell-payment-on" : "cell-payment-off"
+            }"></td>
+          `;
+          clientsList.appendChild(row);
+        });
+      }
+
+      function searchClients() {
+        const searchTerm = document
+          .getElementById("searchInput")
+          .value.toLowerCase();
+        const filteredClients = allClients.filter((client) =>
+          client.full_name.toLowerCase().includes(searchTerm)
+        );
+        displayClients(filteredClients);
       }
 
       function deleteClient(id) {
@@ -101,6 +165,7 @@
             .catch((error) => console.error("Error deleting client:", error));
         }
       }
+
       window.onload = fetchClients;
     </script>
   </body>

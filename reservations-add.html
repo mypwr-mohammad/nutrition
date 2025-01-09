@@ -7,48 +7,88 @@
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
       rel="stylesheet"
     />
-    <title>Make a Reservation</title>
-    <link rel="stylesheet" href="styles/styles.css" />
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
     <link
       rel="stylesheet"
       href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css"
     />
+    <title>Make a Reservation</title>
+    <style>
+      body {
+        background: url("/images/form.jpg") no-repeat center center fixed;
+        background-size: cover;
+        font-family: Arial, sans-serif;
+      }
+      .container {
+        background-color: rgba(255, 255, 255, 0.9);
+        border-radius: 10px;
+        padding: 20px;
+        margin-top: 20px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+      }
+      .btn-reserved {
+        background-color: #dc3545;
+        color: white;
+        cursor: not-allowed;
+      }
+      .btn-selected {
+        background-color: #0d6efd !important;
+        color: white !important;
+      }
+    </style>
   </head>
   <body>
     <header>
-      <div class="header-container">
-        <a href="/reservations-dashboard" class="back-button">
-          <i class="fa-solid fa-arrow-left"></i>
-        </a>
-        <h1>Make a Reservation</h1>
-        <a href="/dashboard" class="home-button">
-          <i class="fa-solid fa-house"></i>
-        </a>
-      </div>
+      <nav class="navbar navbar-dark" style="background-color: #1e5875">
+        <div class="container-fluid">
+          <a href="/reservations-dashboard" class="btn btn-link text-white">
+            <i class="fa-solid fa-arrow-left" style="font-size: 30px"></i>
+          </a>
+          <h1 class="text-center text-white flex-grow-1">Make a Reservation</h1>
+          <a href="/dashboard" class="btn btn-link text-white">
+            <i class="fa-solid fa-house" style="font-size: 30px"></i>
+          </a>
+        </div>
+      </nav>
     </header>
-    <div class="container">
-      <form id="reservationForm" class="form">
-        <div class="form-group">
-          <label for="reservation_date">Reservation Date:</label>
+
+    <div class="container mt-4">
+      <form id="reservationForm" class="needs-validation" novalidate>
+        <div class="mb-3">
+          <label for="reservation_date" class="form-label"
+            >Reservation Date:</label
+          >
           <input
             type="text"
             id="reservation_date"
+            class="form-control"
             placeholder="Select a date"
             required
           />
+          <div class="invalid-feedback">Please select a reservation date.</div>
         </div>
       </form>
-      <div id="timeSlots"></div>
 
-      <h2>Client List</h2>
-      <div class="action-container">
-        <select id="clientList">
-          <!-- Clients will be populated dynamically -->
+      <div id="timeSlots" class="d-flex flex-wrap gap-2"></div>
+
+      <h2 class="mt-4">Client List</h2>
+      <div class="mb-3">
+        <input
+          type="text"
+          id="clientSearch"
+          class="form-control mb-2"
+          placeholder="Search clients..."
+        />
+        <select id="clientList" class="form-select">
+          <option value="">Select a client</option>
         </select>
-        <button id="reserveButton" onclick="reserveSelectedSlot()">
-          Reserve Selected Slot
-        </button>
       </div>
+      <button id="reserveButton" class="btn btn-primary mt-3 w-100" disabled>
+        Reserve Selected Slot
+      </button>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
@@ -98,13 +138,14 @@
               const button = document.createElement("button");
               button.textContent = slot;
               button.disabled = !!reservedSlot;
-              button.className = reservedSlot
-                ? "btn-reserved"
-                : "btn-secondary";
+              button.className = `btn ${
+                reservedSlot ? "btn-reserved" : "btn-secondary"
+              }`;
 
               button.onclick = () => {
                 selectedSlot = slot;
                 highlightSelectedSlot(button);
+                toggleReserveButton();
               };
 
               timeSlotsDiv.appendChild(button);
@@ -148,7 +189,11 @@
           }),
         })
           .then((response) => response.json())
-          .then(() => fetchTimeSlots())
+          .then(() => {
+            alert("Reservation added successfully!");
+            fetchTimeSlots();
+            location.href = '/reservations-dashboard';
+          })
           .catch((error) => console.error("Error making reservation:", error));
       }
 
@@ -157,7 +202,7 @@
           .then((response) => response.json())
           .then((clients) => {
             const clientList = document.getElementById("clientList");
-            clientList.innerHTML = "";
+            clientList.innerHTML = "<option value=''>Select a client</option>";
 
             clients.forEach((client) => {
               const option = document.createElement("option");
@@ -165,12 +210,39 @@
               option.textContent = client.full_name;
               clientList.appendChild(option);
             });
+
+            document
+              .getElementById("clientSearch")
+              .addEventListener("input", (e) => {
+                const searchTerm = e.target.value.toLowerCase();
+                Array.from(clientList.options).forEach((option) => {
+                  if (
+                    option.text.toLowerCase().includes(searchTerm) ||
+                    option.value === ""
+                  ) {
+                    option.style.display = "block";
+                  } else {
+                    option.style.display = "none";
+                  }
+                });
+              });
           });
       }
 
-      window.onload = () => {
-        fetchClients();
-      };
+      function toggleReserveButton() {
+        const clientId = document.getElementById("clientList").value;
+        const reserveButton = document.getElementById("reserveButton");
+        reserveButton.disabled = !(clientId && selectedSlot);
+      }
+
+      document
+        .getElementById("clientList")
+        .addEventListener("change", toggleReserveButton);
+      document
+        .getElementById("reserveButton")
+        .addEventListener("click", reserveSelectedSlot);
+
+      window.onload = fetchClients;
     </script>
   </body>
 </html>
