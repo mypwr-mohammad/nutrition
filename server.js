@@ -130,6 +130,16 @@ app.get('/products-table', checkAuthenticated, (req, res) => {
     res.sendFile(path.join(__dirname, 'products-table.html'));
 });
 
+// Serve Products Edit Page
+app.get('/products-edit/:id', checkAuthenticated, (req, res) => {
+    res.sendFile(path.join(__dirname, 'products-edit.html'));
+});
+
+// Serve Products Edit Page
+app.get('/products-clients', checkAuthenticated, (req, res) => {
+    res.sendFile(path.join(__dirname, 'products-clients.html'));
+});
+
 // Serve Bundles Management Page
 app.get('/bundles-dashboard', checkAuthenticated, (req, res) => {
     res.sendFile(path.join(__dirname, 'bundles-dashboard.html'));

@@ -39,7 +39,7 @@ function setupDatabase() {
         )
     `);
 
-    // Products table
+    // Purchases table
     db.run(`
         CREATE TABLE IF NOT EXISTS purchases (
             id INTEGER PRIMARY KEY AUTOINCREMENT,

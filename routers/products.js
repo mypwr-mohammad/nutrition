@@ -88,6 +88,127 @@ router.post("/sell", (req, res) => {
     });
 });
 
+router.get('/purchases/:clientId', checkAuthenticated, (req, res) => {
+    const { clientId } = req.params;
 
+    const query = `
+        SELECT 
+            products.name AS product_name,
+            products.price AS product_price,
+            purchases.quantity,
+            purchases.purchase_date
+        FROM purchases
+        JOIN products ON purchases.product_id = products.id
+        WHERE purchases.client_id = ?
+        ORDER BY purchases.purchase_date DESC
+    `;
+
+    db.all(query, [clientId], (err, rows) => {
+        if (err) {
+            console.error('Error fetching purchases:', err.message);
+            return res.status(500).send('Error fetching purchases.');
+        }
+        res.json(rows);
+    });
+});
+
+router.post('/sell-multiple', (req, res) => {
+    const { client_id, products } = req.body;
+
+    if (!client_id || !Array.isArray(products) || products.length === 0) {
+        return res.status(400).json({ error: 'Invalid request. Please provide a client ID and products.' });
+    }
+
+    const queries = [];
+    const params = [];
+
+    products.forEach(product => {
+        if (!product.product_id || !product.quantity || product.quantity <= 0) {
+            return res.status(400).json({ error: 'Invalid product data.' });
+        }
+
+        // Reduce stock and update sold_count
+        queries.push(`
+            UPDATE products
+            SET stock = stock - ?, sold_count = sold_count + ?
+            WHERE id = ? AND stock >= ?
+        `);
+        params.push(product.quantity, product.quantity, product.product_id, product.quantity);
+
+        // Insert into purchases table
+        queries.push(`
+            INSERT INTO purchases (client_id, product_id, quantity)
+            VALUES (?, ?, ?)
+        `);
+        params.push(client_id, product.product_id, product.quantity);
+    });
+
+    // Run all queries in a transaction
+    db.serialize(() => {
+        db.run('BEGIN TRANSACTION');
+
+        let success = true;
+        for (let i = 0; i < queries.length; i++) {
+            db.run(queries[i], params.splice(0, queries[i].split('?').length - 1), function (err) {
+                if (err) {
+                    console.error(err);
+                    success = false;
+                }
+            });
+        }
+
+        if (success) {
+            db.run('COMMIT', () => res.json({ success: true }));
+        } else {
+            db.run('ROLLBACK', () => res.status(500).json({ error: 'Transaction failed. Please try again.' }));
+        }
+    });
+});
+
+// Fetch a specific client by ID
+router.get('/:id', checkAuthenticated, (req, res) => {
+    const { id } = req.params;
+
+    db.get("SELECT * FROM products WHERE id = ?", [id], (err, row) => {
+        if (err) {
+            console.error("Error retrieving product:", err.message);
+            return res.status(500).send("Error retrieving product.");
+        }
+
+        if (!row) {
+            return res.status(404).json({ error: 'Product not found' });
+        }
+
+        res.json(row); // Send the retrieved client data as a response
+    });
+});
+
+// Update an existing product  name, price, stock, sold_count
+router.put('/:id', checkAuthenticated, (req, res) => {
+    const { id } = req.params;
+    const { name, price, stock } = req.body;
+
+    // Validation: Ensure required fields are provided
+    if (!name || !price || !stock) {
+        return res.status(400).json({ error: 'Missing required fields' });
+    }
+
+    db.run(
+        `UPDATE products SET name = ?, price = ?, stock = ? WHERE id = ?`,
+        [name, price, stock, id],
+        function (err) {
+            if (err) {
+                console.error("Error updating product:", err.message);
+                return res.status(500).json({ error: "Error updating product." });
+            }
+
+            if (this.changes === 0) {
+                return res.status(404).json({ error: "product not found." });
+            }
+
+            res.json({ id, name, price, stock });
+        }
+    );
+});
 
 module.exports = router

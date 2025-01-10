@@ -3,17 +3,13 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Purchase Product</title>
+    <title>Purchase Products</title>
     <link
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
       rel="stylesheet"
     />
     <link
       href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/css/bootstrap.min.css"
-      rel="stylesheet"
-    />
-    <link
-      href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.1.0-beta.1/css/select2.min.css"
       rel="stylesheet"
     />
     <style>
@@ -30,6 +26,21 @@
         margin-top: 20px;
         box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
       }
+
+      .product-list-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 10px;
+      }
+
+      .product-list-item input[type="number"] {
+        max-width: 80px;
+      }
+
+      .product-list-item button {
+        margin-left: 10px;
+      }
     </style>
   </head>
   <body>
@@ -45,7 +56,7 @@
           ></i>
         </a>
         <div class="flex-grow-1 text-center">
-          <h1 style="color: white">Purchase Product</h1>
+          <h1 style="color: white">Purchase Products</h1>
         </div>
         <a href="/dashboard" class="btn btn-link text-white">
           <i
@@ -55,146 +66,182 @@
         </a>
       </nav>
     </header>
-    <div class="container">
+    <div class="container mt-4">
       <h2>Select a Client</h2>
       <select id="clientDropdown" class="form-control"></select>
 
-      <h2>Select a Product</h2>
-      <select id="productDropdown" class="form-control" disabled></select>
+      <h2 class="mt-4">Select Products</h2>
+      <select id="productDropdown" class="form-control" disabled>
+        <option value="">Select a product</option>
+      </select>
+      <button id="addProductButton" class="btn btn-secondary mt-3" disabled>
+        Add Product
+      </button>
 
-      <div id="storedSelections" class="stored-selections mt-3">
-        <h3>Selected:</h3>
-        <p id="storedClient">No client selected</p>
-        <p id="storedProduct">No product selected</p>
+      <div id="productList" class="mt-4">
+        <h3>Selected Products</h3>
+        <div id="selectedProducts"></div>
       </div>
 
       <button
         id="buyButton"
-        class="btn btn-primary w-100"
+        class="btn btn-primary w-100 mt-4"
         style="background-color: #1e5875"
         disabled
       >
-        Buy
+        Purchase Products
       </button>
     </div>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/js/bootstrap.bundle.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.1.0-beta.1/js/select2.min.js"></script>
     <script>
       const clientDropdown = document.getElementById("clientDropdown");
       const productDropdown = document.getElementById("productDropdown");
+      const addProductButton = document.getElementById("addProductButton");
       const buyButton = document.getElementById("buyButton");
-      const storedClient = document.getElementById("storedClient");
-      const storedProduct = document.getElementById("storedProduct");
+      const selectedProductsContainer =
+        document.getElementById("selectedProducts");
 
       let selectedClientId = null;
-      let selectedProductId = null;
+      let selectedProducts = [];
+      let allProducts = [];
 
-      // Reset dropdowns and selections on page load
-      function resetDropdowns() {
-        clientDropdown.innerHTML = '<option value="">None selected</option>';
-        productDropdown.innerHTML = '<option value="">None selected</option>';
-        storedClient.textContent = "None selected";
-        storedProduct.textContent = "None selected";
-        productDropdown.disabled = true; // Disable product dropdown initially
-        selectedClientId = null;
-        selectedProductId = null;
-        toggleBuyButton();
-      }
-
+      // Initialize dropdowns and data on page load
       window.onload = () => {
-        resetDropdowns();
         fetchClients();
         fetchProducts();
       };
 
-      // Fetch clients and populate the dropdown
+      // Fetch and populate clients dropdown
       function fetchClients() {
         fetch("/clients")
           .then((response) => response.json())
           .then((clients) => {
+            clientDropdown.innerHTML =
+              '<option value="">Select a client</option>';
             clients.forEach((client) => {
               const option = document.createElement("option");
               option.value = client.id;
-              option.textContent = `${client.full_name}`;
+              option.textContent = client.full_name;
               clientDropdown.appendChild(option);
             });
           })
-          .catch((error) => {
-            console.error("Error fetching clients:", error);
-          });
+          .catch((error) => console.error("Error fetching clients:", error));
       }
 
-      // Fetch products and populate the dropdown
+      // Fetch and store all products
       function fetchProducts() {
         fetch("/products")
           .then((response) => response.json())
           .then((products) => {
-            products
-              .filter((product) => product.stock > 0) // Show only products with stock > 0
-              .forEach((product) => {
-                const option = document.createElement("option");
-                option.value = product.id;
-                option.textContent = `${product.name} (Stock: ${product.stock})`;
-                productDropdown.appendChild(option);
-              });
+            allProducts = products.filter((product) => product.stock > 0); // Only products in stock
+            productDropdown.innerHTML =
+              '<option value="">Select a product</option>';
+            allProducts.forEach((product) => {
+              const option = document.createElement("option");
+              option.value = product.id;
+              option.textContent = `${product.name} (Stock: ${product.stock}) (Price: ${product.price})`;
+              productDropdown.appendChild(option);
+            });
           })
-          .catch((error) => {
-            console.error("Error fetching products:", error);
-          });
+          .catch((error) => console.error("Error fetching products:", error));
       }
 
       // Handle client selection
       clientDropdown.addEventListener("change", () => {
         selectedClientId = clientDropdown.value;
-        storedClient.textContent = selectedClientId
-          ? clientDropdown.options[clientDropdown.selectedIndex].text
-          : "None selected";
+        productDropdown.disabled = !selectedClientId;
         toggleBuyButton();
-        productDropdown.disabled = !selectedClientId; // Enable product dropdown if client is selected
       });
 
-      // Handle product selection
+      // Enable "Add Product" button when a product is selected
       productDropdown.addEventListener("change", () => {
-        selectedProductId = productDropdown.value;
-        storedProduct.textContent = selectedProductId
-          ? productDropdown.options[productDropdown.selectedIndex].text
-          : "None selected";
-        toggleBuyButton();
+        addProductButton.disabled = !productDropdown.value;
       });
+
+      // Add a selected product to the list
+      addProductButton.addEventListener("click", () => {
+        const productId = productDropdown.value;
+        const product = allProducts.find((p) => p.id == productId);
+
+        if (product && !selectedProducts.find((p) => p.id == product.id)) {
+          selectedProducts.push({ ...product, quantity: 1 });
+          renderSelectedProducts();
+        }
+
+        productDropdown.value = "";
+        addProductButton.disabled = true;
+      });
+
+      // Render selected products with quantity input
+      function renderSelectedProducts() {
+        selectedProductsContainer.innerHTML = "";
+
+        selectedProducts.forEach((product, index) => {
+          const productDiv = document.createElement("div");
+          productDiv.className = "product-list-item";
+          productDiv.innerHTML = `
+            <span>${product.name} (Stock: ${product.stock})</span>
+            <input
+              type="number"
+              class="form-control"
+              value="${product.quantity}"
+              min="1"
+              max="${product.stock}"
+              onchange="updateQuantity(${index}, this.value)"
+            />
+            <button class="btn btn-danger btn-sm" onclick="removeProduct(${index})">
+              Remove
+            </button>
+          `;
+          selectedProductsContainer.appendChild(productDiv);
+        });
+
+        toggleBuyButton();
+      }
+
+      // Update product quantity
+      function updateQuantity(index, value) {
+        selectedProducts[index].quantity = Math.min(
+          parseInt(value) || 1,
+          selectedProducts[index].stock
+        );
+      }
+
+      // Remove a product from the selection
+      function removeProduct(index) {
+        selectedProducts.splice(index, 1);
+        renderSelectedProducts();
+      }
 
       // Enable/disable the Buy button
       function toggleBuyButton() {
-        buyButton.disabled = !(selectedClientId && selectedProductId);
+        buyButton.disabled = !(selectedClientId && selectedProducts.length > 0);
       }
 
-      // Handle product purchase
+      // Submit purchase
       buyButton.addEventListener("click", () => {
-        if (!selectedClientId || !selectedProductId) return;
-
-        fetch("/products/sell", {
+        fetch("/products/sell-multiple", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             client_id: selectedClientId,
-            product_id: selectedProductId,
+            products: selectedProducts.map((p) => ({
+              product_id: p.id,
+              quantity: p.quantity,
+            })),
           }),
         })
           .then((response) => response.json())
           .then((result) => {
             if (result.success) {
-              alert("Product purchased successfully.");
+              alert("Products purchased successfully.");
               location.reload();
             } else {
-              alert(result.error || "Failed to purchase product.");
+              alert(result.error || "Failed to purchase products.");
             }
           })
-          .catch((error) => console.error("Error purchasing product:", error));
+          .catch((error) => console.error("Error purchasing products:", error));
       });
-
-      // Clear selected values on page unload
-      window.addEventListener("beforeunload", resetDropdowns);
     </script>
   </body>
 </html>

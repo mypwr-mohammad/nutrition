@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
+      rel="stylesheet"
+    />
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <title>Client Purchases</title>
+    <style>
+      body {
+        background: url("/images/form.jpg") no-repeat center center fixed;
+        background-size: cover;
+        font-family: Arial, sans-serif;
+      }
+      .container {
+        background-color: rgba(255, 255, 255, 0.9);
+        border-radius: 10px;
+        padding: 20px;
+        margin-top: 20px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+      }
+      .search-results {
+        max-height: 200px;
+        overflow-y: auto;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        margin-top: 5px;
+        display: none;
+        background: white;
+        z-index: 1000;
+        position: absolute;
+      }
+      .search-results div {
+        padding: 10px;
+        cursor: pointer;
+      }
+      .search-results div:hover {
+        background-color: #f0f0f0;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <nav class="navbar navbar-dark" style="background-color: #1e5875">
+        <div class="container-fluid">
+          <a href="/products-dashboard" class="btn btn-link text-white">
+            <i class="fa-solid fa-arrow-left" style="font-size: 30px"></i>
+          </a>
+          <h1 class="text-center text-white flex-grow-1">Client Purchases</h1>
+          <a href="/dashboard" class="btn btn-link text-white">
+            <i class="fa-solid fa-house" style="font-size: 30px"></i>
+          </a>
+        </div>
+      </nav>
+    </header>
+
+    <div class="container mt-4">
+      <div class="mb-3 position-relative">
+        <label for="clientSearch" class="form-label">Search Clients</label>
+        <input
+          type="text"
+          id="clientSearch"
+          class="form-control"
+          placeholder="Enter client name"
+        />
+        <div id="searchResults" class="search-results"></div>
+      </div>
+
+      <h3 id="selectedClient" class="mt-4">Selected Client: None</h3>
+      <div class="container mt-4">
+        <h2>Purchased Products</h2>
+        <table class="table table-hover">
+          <thead>
+            <tr>
+              <th>Product Name</th>
+              <th>Price (NIS)</th>
+              <th>Quantity</th>
+              <th>Purchase Date</th>
+            </tr>
+          </thead>
+          <tbody id="productList">
+            <tr>
+              <td colspan="4" class="text-center">
+                Select a client to view purchases.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <script>
+      const clientSearch = document.getElementById("clientSearch");
+      const searchResults = document.getElementById("searchResults");
+      const selectedClient = document.getElementById("selectedClient");
+      const productList = document.getElementById("productList");
+
+      let allClients = [];
+
+      // Fetch all clients
+      function fetchClients() {
+        fetch("/clients")
+          .then((response) => response.json())
+          .then((clients) => {
+            allClients = clients;
+          })
+          .catch((error) => console.error("Error fetching clients:", error));
+      }
+
+      // Search clients dynamically
+      clientSearch.addEventListener("input", () => {
+        const searchTerm = clientSearch.value.toLowerCase();
+        searchResults.innerHTML = "";
+
+        if (searchTerm) {
+          const filteredClients = allClients.filter((client) =>
+            client.full_name.toLowerCase().includes(searchTerm)
+          );
+
+          if (filteredClients.length > 0) {
+            searchResults.style.display = "block";
+            filteredClients.forEach((client) => {
+              const clientDiv = document.createElement("div");
+              clientDiv.textContent = client.full_name;
+              clientDiv.dataset.clientId = client.id;
+              clientDiv.onclick = () => selectClient(client);
+              searchResults.appendChild(clientDiv);
+            });
+          } else {
+            searchResults.style.display = "none";
+          }
+        } else {
+          searchResults.style.display = "none";
+        }
+      });
+
+      // Select a client
+      function selectClient(client) {
+        selectedClient.textContent = `Selected Client: ${client.full_name}`;
+        searchResults.style.display = "none";
+        clientSearch.value = "";
+        fetchClientPurchases(client.id);
+      }
+
+      // Fetch purchased products for the selected client
+      function fetchClientPurchases(clientId) {
+        fetch(`/products/purchases/${clientId}`)
+          .then((response) => response.json())
+          .then((products) => {
+            productList.innerHTML = ""; // Clear existing data
+
+            if (products.length === 0) {
+              productList.innerHTML =
+                '<tr><td colspan="4" class="text-center">No purchases found for this client.</td></tr>';
+              return;
+            }
+
+            products.forEach((product) => {
+              const productItem = document.createElement("tr");
+              productItem.innerHTML = `
+                <td>${product.product_name}</td>
+                <td>${product.product_price} NIS</td>
+                <td>${product.quantity}</td>
+                <td>${new Date(product.purchase_date).toLocaleString()}</td>
+              `;
+              productList.appendChild(productItem);
+            });
+          })
+          .catch((error) =>
+            console.error("Error fetching client purchases:", error)
+          );
+      }
+
+      // Initialize the page
+      window.onload = fetchClients;
+    </script>
+  </body>
+</html>
