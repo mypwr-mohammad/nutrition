@@ -1,10 +1,14 @@
+const { setupDatabase, db } = require('./database/setup');
+
+// Import the database setup function Call the function to initialize the database
+setupDatabase();
+
 const express = require('express');
 const bodyParser = require('body-parser');
 const bcrypt = require('bcrypt');
 const path = require('path');
 const session = require('express-session');
 const SQLiteStore = require('connect-sqlite3')(session);
-const { setupDatabase, db } = require('./database/setup');
 const clientsRouter = require('./routers/clients');
 const bundlesRouter = require('./routers/bundles');
 const paymentsRouter = require('./routers/payments');
@@ -41,9 +45,6 @@ app.use('/bundles', bundlesRouter);
 app.use('/payments', paymentsRouter);
 app.use('/products', productsRouter);
 app.use('/reservations', reservationsRouter);
-
-// Import the database setup function Call the function to initialize the database
-setupDatabase();
 
 // Serve login page as default route
 app.get('/', redirectIfAuthenticated, (req, res) => {
