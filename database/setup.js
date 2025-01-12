@@ -96,23 +96,29 @@ function setupDatabase() {
             const addColumnQuery = `
             ALTER TABLE payments ADD COLUMN paid_amount REAL DEFAULT 0.0;
           `;
-            db.run(`
-            UPDATE payments SET paid_amount = price WHERE paid_amount = 0.0;
-            `);
-
             db.run(addColumnQuery, (err) => {
                 if (err) {
                     console.error("Error adding column 'paid_amount':", err.message);
                 } else {
                     console.log("Column 'paid_amount' added successfully.");
+
+                    // Update the column with initial values after it has been added
+                    const updateQuery = `
+                    UPDATE payments SET paid_amount = price WHERE paid_amount = 0.0;
+                  `;
+                    db.run(updateQuery, (err) => {
+                        if (err) {
+                            console.error("Error updating 'paid_amount':", err.message);
+                        } else {
+                            console.log("'paid_amount' column updated successfully.");
+                        }
+                    });
                 }
             });
         } else {
             console.log("Column 'paid_amount' already exists.");
         }
     });
-
-
 
     // Reservations table
     db.run(`
