@@ -127,8 +127,8 @@ function setupDatabase() {
 
     // Function to add admin user
     function addAdminUser() {
-        const adminUsername = 'admin';
-        const adminPassword = 'password123'; // Replace with a secure password
+        const adminUsername = 'laila';
+        const adminPassword = 'Laila@2024'; // Replace with a secure password
         const saltRounds = 10;
 
         bcrypt.hash(adminPassword, saltRounds, (err, hash) => {

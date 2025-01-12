@@ -8,10 +8,7 @@
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
       rel="stylesheet"
     />
-    <link
-      href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/css/bootstrap.min.css"
-      rel="stylesheet"
-    />
+    <link rel="stylesheet" href="/css/bootstrap.min.css" />
     <style>
       body {
         background: url("/images/form.jpg") no-repeat center center fixed;
@@ -88,11 +85,14 @@
       </div>
       <button id="freezeButton" class="btn btn-primary w-100"></button>
     </div>
-
+    <script src="/js/bootstrap.bundle.min.js"></script>
     <script>
       document.addEventListener("DOMContentLoaded", () => {
         const clientId = location.pathname.split("/").pop();
         const freezeButton = document.getElementById("freezeButton");
+        const expireDateElem = document.getElementById("expireDate");
+
+        let daysFrozen = 0; // Tracks the number of days frozen
 
         // Fetch payment details
         fetch(`/payments/byClientId/${clientId}`)
@@ -121,7 +121,7 @@
                 ? "Active"
                 : "Expired";
 
-            // Set the button text based on the freeze status
+            daysFrozen = payment.days_frozen || 0; // Track frozen days
             updateFreezeButton(payment.is_frozen);
           })
           .catch((error) => {
@@ -149,19 +149,21 @@
             .then((result) => {
               alert(`${isFrozen ? "Unfrozen" : "Frozen"} successfully.`);
               if (!isFrozen && result.days_frozen) {
-                const expireDateElem = document.getElementById("expireDate");
-                const expireDate = new Date(expireDateElem.textContent);
-                expireDate.setDate(expireDate.getDate() + result.days_frozen);
-                expireDateElem.textContent = expireDate
-                  .toISOString()
-                  .split("T")[0];
+                daysFrozen = result.days_frozen;
+                updateExpireDate(daysFrozen);
               }
-              // Update button text to reflect the new state
-              updateFreezeButton(!isFrozen);
+              location.reload(); // Refresh the page
             })
             .catch((error) => {
               alert(`Error: ${error.message}`);
             });
+        }
+
+        // Update the expire date with frozen days
+        function updateExpireDate(frozenDays) {
+          const expireDate = new Date(expireDateElem.textContent);
+          expireDate.setDate(expireDate.getDate() + frozenDays);
+          expireDateElem.textContent = expireDate.toISOString().split("T")[0];
         }
 
         // Redirect to edit payment page

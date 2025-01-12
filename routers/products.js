@@ -2,6 +2,7 @@
 const express = require('express');
 const { db } = require('../database/setup');
 const { checkAuthenticated } = require('../middlewares');
+const { DateTime } = require("luxon");
 
 const router = express.Router();
 
@@ -119,6 +120,9 @@ router.post('/sell-multiple', (req, res) => {
         return res.status(400).json({ error: 'Invalid request. Please provide a client ID and products.' });
     }
 
+    // Get current time in Jerusalem timezone
+    const jerusalemTime = DateTime.now().setZone("Asia/Jerusalem").toISO();
+
     const queries = [];
     const params = [];
 
@@ -135,12 +139,12 @@ router.post('/sell-multiple', (req, res) => {
         `);
         params.push(product.quantity, product.quantity, product.product_id, product.quantity);
 
-        // Insert into purchases table
+        // Insert into purchases table with purchase date
         queries.push(`
-            INSERT INTO purchases (client_id, product_id, quantity)
-            VALUES (?, ?, ?)
+            INSERT INTO purchases (client_id, product_id, quantity, purchase_date)
+            VALUES (?, ?, ?, ?)
         `);
-        params.push(client_id, product.product_id, product.quantity);
+        params.push(client_id, product.product_id, product.quantity, jerusalemTime);
     });
 
     // Run all queries in a transaction

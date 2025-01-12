@@ -3,19 +3,20 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Make a Reservation</title>
     <link
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
       rel="stylesheet"
     />
+    <link rel="stylesheet" href="/css/bootstrap.min.css" />
     <link
-      href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/css/bootstrap.min.css"
+      href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.1.0-beta.1/css/select2.min.css"
       rel="stylesheet"
     />
     <link
       rel="stylesheet"
       href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css"
     />
-    <title>Make a Reservation</title>
     <style>
       body {
         background: url("/images/form.jpg") no-repeat center center fixed;
@@ -76,30 +77,30 @@
 
       <h2 class="mt-4">Client List</h2>
       <div class="mb-3">
-        <input
-          type="text"
-          id="clientSearch"
-          class="form-control mb-2"
-          placeholder="Search clients..."
-        />
-        <select id="clientList" class="form-select">
-          <option value="">Select a client</option>
-        </select>
+        <select
+          id="clientList"
+          class="form-select"
+          style="width: 100%"
+        ></select>
       </div>
       <button id="reserveButton" class="btn btn-primary mt-3 w-100" disabled>
         Reserve Selected Slot
       </button>
     </div>
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.1.0-beta.1/js/select2.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <script>
+      let allClients = [];
       let selectedSlot = null;
 
       // Initialize Flatpickr
       flatpickr("#reservation_date", {
         minDate: "today",
         dateFormat: "Y-m-d",
-        onChange: () => fetchTimeSlots(),
+        onChange: fetchTimeSlots,
       });
 
       // Generate 15-minute intervals from 8:00 AM to 6:00 PM
@@ -170,7 +171,7 @@
         }
 
         const date = document.getElementById("reservation_date").value;
-        const clientId = document.getElementById("clientList").value;
+        const clientId = $("#clientList").val();
 
         if (!clientId) {
           alert("Please select a client.");
@@ -192,7 +193,7 @@
           .then(() => {
             alert("Reservation added successfully!");
             fetchTimeSlots();
-            location.href = '/reservations-dashboard';
+            location.href = "/reservations-dashboard";
           })
           .catch((error) => console.error("Error making reservation:", error));
       }
@@ -201,43 +202,28 @@
         fetch("/clients")
           .then((response) => response.json())
           .then((clients) => {
-            const clientList = document.getElementById("clientList");
-            clientList.innerHTML = "<option value=''>Select a client</option>";
+            allClients = clients;
+            const clientOptions = allClients.map((client) => ({
+              id: client.id,
+              text: client.full_name,
+            }));
 
-            clients.forEach((client) => {
-              const option = document.createElement("option");
-              option.value = client.id;
-              option.textContent = client.full_name;
-              clientList.appendChild(option);
-            });
-
-            document
-              .getElementById("clientSearch")
-              .addEventListener("input", (e) => {
-                const searchTerm = e.target.value.toLowerCase();
-                Array.from(clientList.options).forEach((option) => {
-                  if (
-                    option.text.toLowerCase().includes(searchTerm) ||
-                    option.value === ""
-                  ) {
-                    option.style.display = "block";
-                  } else {
-                    option.style.display = "none";
-                  }
-                });
-              });
+            $("#clientList")
+              .select2({
+                data: clientOptions,
+                placeholder: "Select a client",
+                width: "100%",
+              })
+              .on("change", toggleReserveButton);
           });
       }
 
       function toggleReserveButton() {
-        const clientId = document.getElementById("clientList").value;
+        const clientId = $("#clientList").val();
         const reserveButton = document.getElementById("reserveButton");
         reserveButton.disabled = !(clientId && selectedSlot);
       }
 
-      document
-        .getElementById("clientList")
-        .addEventListener("change", toggleReserveButton);
       document
         .getElementById("reserveButton")
         .addEventListener("click", reserveSelectedSlot);
