@@ -120,7 +120,13 @@
         }
 
         clients.forEach((client) => {
-          const isFullyPaid = client.paid_amount == client.price;
+          // Ensure numeric comparison and log values for debugging
+          const paidAmount = parseFloat(client.paid_amount) || 0; // Default to 0 if value is null/undefined
+          const price = parseFloat(client.price) || 0; // Default to 0 if value is null/undefined
+          console.log(client);
+
+          const isFullyPaid = client.last_paid_amount >= client.last_payment_price; // Compare numerically
+
           const paymentStatusClass = client.has_active_payment
             ? "cell-payment-on"
             : "cell-payment-off";

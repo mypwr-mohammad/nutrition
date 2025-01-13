@@ -72,13 +72,8 @@
         </div>
         <div class="mb-3">
           <label for="expire_date" class="form-label">Expire Date</label>
-          <input
-            type="date"
-            id="expire_date"
-            class="form-control"
-            required
-            readonly
-          />
+          <!-- Removed readonly attribute -->
+          <input type="date" id="expire_date" class="form-control" required />
           <div class="invalid-feedback">Expire Date is required.</div>
         </div>
         <div class="mb-3">
@@ -181,8 +176,6 @@
             paid_amount: document.getElementById("paid_amount").value,
             bundle_id: document.getElementById("bundle_id").value || null,
           };
-
-          console.log(clientId);
 
           fetch(`/payments/${paymentId}`, {
             method: "PUT",

@@ -29,9 +29,11 @@
       }
       .cell-payment-on {
         background-color: #4caf50 !important;
+        color: white !important;
       }
       .cell-payment-off {
         background-color: #f44336 !important;
+        color: white !important;
       }
     </style>
   </head>
@@ -81,7 +83,7 @@
             <th scope="col">Phone Number</th>
             <th scope="col">Notes</th>
             <th scope="col">Actions</th>
-            <th scope="col">Status</th>
+            <th scope="col">Payment Status</th>
           </tr>
         </thead>
         <tbody id="clientsList">
@@ -114,25 +116,40 @@
         }
 
         clients.forEach((client) => {
+          console.log(client);
+          const isFullyPaid =
+            parseFloat(client.last_paid_amount || 0) >=
+            parseFloat(client.last_payment_price || 0);
+          const paymentStatusClass = client.has_active_payment
+            ? "cell-payment-on"
+            : "cell-payment-off";
+          const paymentStatusText = client.has_active_payment
+            ? isFullyPaid
+              ? "Fully Paid"
+              : "Not Fully Paid"
+            : "Inactive";
+
           const row = document.createElement("tr");
           row.innerHTML = `
             <td>${client.full_name}</td>
-            <td>${client.date_of_birth}</td>
-            <td>${client.phone_number}</td>
+            <td>${client.date_of_birth || "N/A"}</td>
+            <td>${client.phone_number || "N/A"}</td>
             <td>${client.notes || "N/A"}</td>
             <td>
-              <button class="btn btn-sm" onclick="location.href='/clients-edit/${
+              <button class="btn btn-sm btn-warning" onclick="location.href='/clients-edit/${
                 client.id
               }'">
                 <i class="fas fa-edit"></i>
               </button>
-              <button class="btn btn-sm" onclick="deleteClient(${client.id})">
+              <button class="btn btn-sm btn-danger" onclick="deleteClient(${
+                client.id
+              })">
                 <i class="fas fa-trash"></i>
               </button>
             </td>
-            <td class="${
-              client.has_active_payment ? "cell-payment-on" : "cell-payment-off"
-            }"></td>
+            <td class="${paymentStatusClass}" style="text-align: center;">
+              ${paymentStatusText}
+            </td>
           `;
           clientsList.appendChild(row);
         });

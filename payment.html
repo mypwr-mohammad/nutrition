@@ -3,12 +3,12 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Make Payment</title>
     <link
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
       rel="stylesheet"
     />
     <link rel="stylesheet" href="/css/bootstrap.min.css" />
-    <title>Make Payment</title>
     <style>
       body {
         background: url("/images/form.jpg") no-repeat center center fixed;
@@ -65,13 +65,7 @@
         </div>
         <div class="mb-3">
           <label for="expire_date" class="form-label">Expire Date</label>
-          <input
-            type="date"
-            id="expire_date"
-            class="form-control"
-            readonly
-            required
-          />
+          <input type="date" id="expire_date" class="form-control" required />
           <div class="invalid-feedback">Expire Date is required.</div>
         </div>
         <div class="mb-3">
@@ -97,38 +91,9 @@
       </form>
     </div>
     <script src="/js/bootstrap.bundle.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <script>
       const clientId = location.pathname.split("/").pop();
       document.getElementById("client_id").value = clientId;
-
-      // Initialize Flatpickr for date fields
-      flatpickr("#start_date", {
-        minDate: "today",
-        dateFormat: "Y-m-d",
-        defaultDate: new Date().toISOString().split("T")[0],
-        onChange: () => updateExpireDate(),
-      });
-
-      // Fetch client details
-      fetch(`/clients/${clientId}`)
-        .then((response) => {
-          if (!response.ok) throw new Error("Failed to fetch client details.");
-          return response.json();
-        })
-        .then((client) => {
-          const clientNameElement = document.getElementById("clientName");
-          if (clientNameElement) {
-            clientNameElement.textContent = client.full_name;
-          }
-        })
-        .catch((error) => {
-          const clientNameElement = document.getElementById("clientName");
-          if (clientNameElement) {
-            clientNameElement.textContent = "Error loading client name.";
-          }
-          console.error("Error fetching client:", error);
-        });
 
       let bundles = [];
 
@@ -141,14 +106,38 @@
           bundles.forEach((bundle) => {
             const option = document.createElement("option");
             option.value = bundle.id;
-            option.textContent = bundle.name;
-            option.dataset.duration = bundle.duration;
-            option.dataset.price = bundle.price;
+            option.textContent = `${bundle.name} (${bundle.duration} months)`;
             bundleSelect.appendChild(option);
           });
         });
 
+      // Set today's date as default for start date
+      const today = new Date().toISOString().split("T")[0];
+      document.getElementById("start_date").value = today;
+
+      // Calculate and set the expiration date based on the selected bundle
       document.getElementById("bundle_id").addEventListener("change", () => {
+        const selectedBundle = bundles.find(
+          (bundle) => bundle.id == document.getElementById("bundle_id").value
+        );
+
+        if (selectedBundle) {
+          const startDate = document.getElementById("start_date").value
+            ? new Date(document.getElementById("start_date").value)
+            : new Date();
+          const expireDate = new Date(startDate);
+          expireDate.setMonth(
+            expireDate.getMonth() + parseInt(selectedBundle.duration)
+          );
+          document.getElementById("expire_date").value = expireDate
+            .toISOString()
+            .split("T")[0];
+          document.getElementById("price").value = selectedBundle.price;
+        }
+      });
+
+      // Allow editing of start and expire date without overriding
+      document.getElementById("start_date").addEventListener("change", () => {
         const selectedBundle = bundles.find(
           (bundle) => bundle.id == document.getElementById("bundle_id").value
         );
@@ -157,61 +146,48 @@
           const startDate = new Date(
             document.getElementById("start_date").value
           );
-          startDate.setMonth(
-            startDate.getMonth() + parseInt(selectedBundle.duration)
+          const expireDate = new Date(startDate);
+          expireDate.setMonth(
+            expireDate.getMonth() + parseInt(selectedBundle.duration)
           );
-          document.getElementById("expire_date").value = startDate
+          document.getElementById("expire_date").value = expireDate
             .toISOString()
             .split("T")[0];
-          document.getElementById("price").value = selectedBundle.price;
-        } else {
-          document.getElementById("expire_date").value = "";
-          document.getElementById("price").value = "";
         }
       });
 
-      // Bootstrap validation
-      (() => {
-        const forms = document.querySelectorAll(".needs-validation");
-        Array.from(forms).forEach((form) => {
-          form.addEventListener("submit", (event) => {
-            if (!form.checkValidity()) {
-              event.preventDefault();
-              event.stopPropagation();
-            } else {
-              event.preventDefault();
-              const paymentData = {
-                client_id: clientId,
-                start_date: document.getElementById("start_date").value,
-                expire_date: document.getElementById("expire_date").value,
-                price: document.getElementById("price").value || 0,
-                bundle_id: document.getElementById("bundle_id").value || null,
-                paid_amount: document.getElementById("paid_amount").value || 0,
-              };
+      // Form submission
+      document
+        .getElementById("paymentForm")
+        .addEventListener("submit", (event) => {
+          event.preventDefault();
 
-              fetch("/payments", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(paymentData),
-              })
-                .then((response) => {
-                  if (response.ok) {
-                    alert("Payment added successfully.");
-                    location.href = "/clients-payments";
-                  } else {
-                    return response.text().then((text) => {
-                      throw new Error(text);
-                    });
-                  }
-                })
-                .catch((error) => {
-                  alert(`Error: ${error.message}`);
-                });
-            }
-            form.classList.add("was-validated");
-          });
+          const paymentData = {
+            client_id: clientId,
+            start_date: document.getElementById("start_date").value,
+            expire_date: document.getElementById("expire_date").value,
+            price: document.getElementById("price").value || 0,
+            bundle_id: document.getElementById("bundle_id").value || null,
+            paid_amount: document.getElementById("paid_amount").value || 0,
+          };
+
+          fetch("/payments", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(paymentData),
+          })
+            .then((response) => {
+              if (response.ok) {
+                alert("Payment added successfully.");
+                location.href = "/clients-payments";
+              } else {
+                throw new Error("Failed to add payment.");
+              }
+            })
+            .catch((error) => {
+              alert(`Error: ${error.message}`);
+            });
         });
-      })();
     </script>
   </body>
 </html>

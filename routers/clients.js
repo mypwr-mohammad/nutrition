@@ -5,21 +5,33 @@ const { checkAuthenticated } = require('../middlewares');
 
 const router = express.Router();
 
-// Fetch all clients
+// Fetch all clients with their last payment
 router.get("/", checkAuthenticated, (req, res) => {
     const query = `
-    SELECT clients.*, 
-           SUM(DATE(payments.expire_date) > DATE()) > 0 as has_active_payment, payments.price, payments.paid_amount
-    FROM clients
-    LEFT JOIN payments ON clients.id = payments.client_id
-    GROUP BY clients.id
-    ORDER BY 
-      CASE
-        WHEN clients.full_name GLOB '[آ-ي]*' THEN 1 -- Arabic names first
-        ELSE 2 -- English or other names second
-      END,
-      clients.full_name COLLATE NOCASE -- Alphabetical order (case-insensitive)
-  `;
+        SELECT 
+            clients.*,
+            payments.expire_date AS latest_expire_date,
+            payments.price AS last_payment_price,
+            payments.paid_amount AS last_paid_amount,
+            CASE 
+                WHEN DATE(payments.expire_date) > DATE() THEN 1 
+                ELSE 0 
+            END AS has_active_payment
+        FROM clients
+        LEFT JOIN payments ON payments.id = (
+            SELECT id
+            FROM payments
+            WHERE payments.client_id = clients.id
+            ORDER BY payments.expire_date DESC
+            LIMIT 1
+        )
+        ORDER BY 
+            CASE
+                WHEN clients.full_name GLOB '[آ-ي]*' THEN 1 -- Arabic names first
+                ELSE 2 -- English or other names second
+            END,
+            clients.full_name COLLATE NOCASE;
+    `;
 
     db.all(query, [], (err, rows) => {
         if (err) {
@@ -29,7 +41,6 @@ router.get("/", checkAuthenticated, (req, res) => {
         res.json(rows);
     });
 });
-
 
 // Fetch a specific client by ID
 router.get('/:id', checkAuthenticated, (req, res) => {
